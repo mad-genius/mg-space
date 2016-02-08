@@ -1,0 +1,25 @@
+#mg-arrow {
+    border-bottom: 10px solid #efefef;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    height: 0;
+    position: absolute;
+    top: -10px;
+    width: 0;
+}
+.mg-row {
+    margin-bottom: 25px;
+}
+.mg-space {
+    display:none;
+    margin-bottom:25px
+}
+.mg-target {
+    display:none;
+    background: #efefef;
+}
+.mg-target-open {
+    position:absolute;
+    top:0;left:0;right:0;
+    padding:60px 0;
+}
