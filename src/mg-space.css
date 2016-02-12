@@ -1,5 +1,5 @@
-#mg-arrow {
-    border-bottom: 10px solid #efefef;
+.mg-arrow {
+    border-bottom: 10px solid #222;
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
     height: 0;
@@ -16,10 +16,27 @@
 }
 .mg-target {
     display:none;
-    background: #efefef;
+    background: #222;
+    color: #888;
 }
 .mg-target-open {
     position:absolute;
     top:0;left:0;right:0;
     padding:60px 0;
+}
+
+.mg-close {
+    background: url(data:image/gif;base64,R0lGODlhFAAUAJEAAE1NTf///////wAAACH5BAEHAAIALAAAAAAUABQAAAIzBISpK+YMm5Enpodw1HlCfnkKOIqU1VXk55goVb2hi7Y0q95lfG70uurNaqLgTviyyUoFADs=) no-repeat center center;
+    cursor: pointer;
+    height: 30px;
+    padding: 7px;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 30px;
+    z-index: 2;
+}
+
+.mg-close:hover {
+    opacity: .5;
 }
