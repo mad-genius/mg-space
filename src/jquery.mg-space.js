@@ -28,7 +28,8 @@
             trigger: "mg-trigger",
             targetsWrapper: "mg-targets",
             target: "mg-target",
-            targetPadding: 120
+            targetPadding: 120,
+            useHash: false // Set to true for history
         };
 
     // The actual plugin constructor
@@ -51,11 +52,22 @@
             // SET CURRENT COLUMNS
             $('.'+mgs.rowsWrapper).attr('data-cols',cols);
 
+            // CHECK FOR HASH
+            if (window.location.hash && mgs.useHash) {
+                setTimeout(function () {
+                    mg.toggleRow(window.location.hash+' .'+mgs.trigger);
+                }, 500);
+            }
+
             $(document).on('click', '.'+mgs.trigger, function (ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
 
                 mg.toggleRow(this);
+
+                if (mgs.useHash) {
+                    mg.activateHash($(this).attr('href'));
+                }
             });
 
             $(document).on('click', '.mg-close', function (ev) {
@@ -88,6 +100,12 @@
                     });
                 }
             });
+
+            $(window).on('hashchange', function(e) {
+                setTimeout(function () {
+                    mg.toggleRow(window.location.hash+' .'+mgs.trigger);
+                }, 500);
+            });            
         },
 
         toggleRow: function (element) {
@@ -283,6 +301,15 @@
                e = document.documentElement || document.body;
            }
            return e[ a+'Width' ];
+        },
+
+        activateHash: function (hash) {
+            if(history.pushState) {
+                history.pushState(null, null, window.location.origin + window.location.pathname + window.location.search + hash);
+            } else {
+                // Otherwise fallback to the hash update for sites that don't support the history api
+                window.location.hash = hash;
+            }
         }
     });
 
