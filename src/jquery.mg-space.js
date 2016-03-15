@@ -138,7 +138,6 @@
                 mg.closeTarget();
 
                 $('.mg-space').slideToggle(400, function () {
-                    $('.mg-space').remove();
                     
                     mg.openSpace(rowItem);
                     mg.openTarget(rowItem);
@@ -218,7 +217,11 @@
             $(itemTarget).css('position','fixed').show();
             targetHeight = $(itemTarget).height();
 
-            $('.'+mgs.rowsWrapper).find('[data-row="' + itemCurrent + '"]').last().after('<div class="mg-space sm-12 lg-12" data-row="' + itemCurrent + '"><div class="mg-arrow"></div></div>');
+            if (!$('.mg-space[data-row="' + itemCurrent + '"]').length) {
+                $('.mg-space').remove();
+                $('.'+mgs.rowsWrapper).find('[data-row="' + itemCurrent + '"]').last().after('<div class="mg-space sm-12 lg-12" data-row="' + itemCurrent + '"><div class="mg-arrow"></div></div>');
+            }
+
 
             $('.mg-space[data-row="' + itemCurrent + '"]').css('height', targetHeight + mgs.targetPadding).slideToggle(400, function() {
                 $('.mg-arrow').css({
@@ -229,9 +232,7 @@
         },
         closeSpace: function (element) {
                 $('.mg-space').slideToggle(400, function () {
-                    $('.mg-arrow').animate({top:0}, 200, function () {
-                        $('.mg-space').remove();
-                    });
+                    $('.mg-arrow').animate({top:0}, 200);
                 });
         },
         resizeSpace: function (element) {
