@@ -9,7 +9,7 @@ $(function() {
     }
 
     if($('.mg-space-multiple').length){
-        $('.mg-space-init').mgSpace({useHash: true});
+        $('.mg-space-init4').mgSpace({useHash: true});
     }
 
     // Chrome Dev Tools Screen Sizing Clone

@@ -55,11 +55,19 @@
             // CHECK FOR HASH
             if (window.location.hash && mgs.useHash) {
                 setTimeout(function () {
-                    mg.toggleRow(window.location.hash+' .'+mgs.trigger);
+                    var rowItem = $(window.location.hash+' .'+mgs.trigger).parent();
+                    if (!$(rowItem).hasClass(mgs.row+'-open')) {
+                        $(rowItem).addClass(mgs.row+'-open');
+                        mg.openSpace(rowItem);
+                        mg.openTarget(rowItem);
+                        $('html, body').animate({
+                            scrollTop: $(rowItem).offset().top
+                        }, 400); 
+                    }
                 }, 500);
             }
 
-            $(document).on('click', '.'+mgs.trigger, function (ev) {
+            $(mg.element).on('click', '.'+mgs.trigger, function (ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
 
@@ -70,7 +78,7 @@
                 }
             });
 
-            $(document).on('click', '.mg-close', function (ev) {
+            $(mg.element).on('click', '.mg-close', function (ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
                 var targetItem = $(this).parent().attr('data-target');
@@ -80,7 +88,7 @@
 
             // CHANGE COLUMNS ON RESIZE EVENT
             $(window).on('resize', function (argument) {
-                var cols = mg.flowColumns('.'+mgs.row);
+                var cols = mg.flowColumns($('.'+mgs.row, mg.element));
                 if (cols != $('.'+mgs.rowsWrapper).attr('data-cols')) {
                     $('.'+mgs.rowsWrapper).attr('data-cols',cols);
 
@@ -101,7 +109,7 @@
                 }
             });
 
-            $(window).on('hashchange', function(e) {
+            $(window).off('hashchange').on('hashchange', function(e) {
                 setTimeout(function () {
                     mg.toggleRow(window.location.hash+' .'+mgs.trigger);
                 }, 500);
@@ -264,7 +272,7 @@
                 k = 1,
                 col = 1,
                 parent = null,
-                section = 0;
+                new_parent = $(mg.element).index();
 
             $.each(mgs.breakpointColumns, function( idx, val ) {
                 if (mg.getViewportWidth() > val.breakpoint) {
@@ -273,24 +281,16 @@
             });
 
             $(cols).each(function(idx) {
-                var new_parent = $(mg.element).index();
-
-                //console.log(parent, new_parent);
                 
                 if(parent==null) {
                     parent=new_parent;
                 }
-
-                console.log(parent, new_parent);
                 
                 if(parent != new_parent){
-                    section++;
-                    j=0,
-                    k=1,
                     parent=$(mg.element).index();
                 }   
 
-                $(this).attr('data-row', section+'-'+j);
+                $(this).attr('data-row', parent+'-'+j);
                 if(k==col){
                     j++,
                     k=0;
