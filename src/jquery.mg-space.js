@@ -47,7 +47,7 @@
 
             var mg = this,
                 mgs = this.settings,
-                cols = mg.flowColumns('.'+mgs.row);
+                cols = mg.flowColumns($('.'+mgs.row, this.element));
 
             // SET CURRENT COLUMNS
             $('.'+mgs.rowsWrapper).attr('data-cols',cols);
@@ -272,18 +272,22 @@
                 }
             });
 
-            $( cols ).each(function(idx) {
-                var new_parent = $(this).parent().index();
+            $(cols).each(function(idx) {
+                var new_parent = $(mg.element).index();
 
+                //console.log(parent, new_parent);
+                
                 if(parent==null) {
-                    parent=$(this).parent().index();
+                    parent=new_parent;
                 }
+
+                console.log(parent, new_parent);
                 
                 if(parent != new_parent){
                     section++;
                     j=0,
                     k=1,
-                    parent=$(this).parent().index();
+                    parent=$(mg.element).index();
                 }   
 
                 $(this).attr('data-row', section+'-'+j);
