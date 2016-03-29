@@ -263,7 +263,8 @@
                 j = 0,
                 k = 1,
                 col = 1,
-                parent = null;
+                parent = null,
+                section = 0;
 
             $.each(mgs.breakpointColumns, function( idx, val ) {
                 if (mg.getViewportWidth() > val.breakpoint) {
@@ -273,18 +274,19 @@
 
             $( cols ).each(function(idx) {
                 var new_parent = $(this).parent().index();
-                
+
                 if(parent==null) {
                     parent=$(this).parent().index();
                 }
                 
                 if(parent != new_parent){
+                    section++;
                     j=0,
                     k=1,
                     parent=$(this).parent().index();
-                }        
+                }   
 
-                $(this).attr('data-row', j);
+                $(this).attr('data-row', section+'-'+j);
                 if(k==col){
                     j++,
                     k=0;
