@@ -29,7 +29,8 @@
             targetsWrapper: "mg-targets",
             target: "mg-target",
             targetPadding: 120,
-            useHash: false // Set to true for history
+            useHash: false, // Set to true for history
+            useArrow: true
         };
 
     // The actual plugin constructor
@@ -103,9 +104,12 @@
                     var targetItem = $('.'+mgs.target+'-open').attr('data-target');
                     $('.'+mgs.target+'-open').css('top',$('#'+targetItem).offset().top+$('#'+targetItem).height() + mgs.rowMargin );
                     $('.mg-space').css('height',$('.'+mgs.target+'-open').height()+mgs.targetPadding);
-                    $('.mg-arrow').css({
-                        left: $('#'+targetItem).offset().left + parseInt($('#'+targetItem).css('padding-left')) + $('#'+targetItem).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
-                    });
+                    if (mgs.useArrow) {
+                        $('.mg-arrow').css({
+                            left: $('#'+targetItem).offset().left + parseInt($('#'+targetItem).css('padding-left')) + $('#'+targetItem).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
+                        });                        
+                    }
+
                 }
             });
 
@@ -232,10 +236,13 @@
 
 
             $('.mg-space[data-row="' + itemCurrent + '"]').css('height', targetHeight + mgs.targetPadding).slideToggle(400, function() {
-                $('.mg-arrow').css({
-                    left: itemOffset.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
-                });
-                $('.mg-arrow').animate({top:-9}, 200);
+                if (mgs.useArrow) {
+                    $('.mg-arrow').css({
+                        left: itemOffset.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
+                    });
+                    $('.mg-arrow').animate({top:-9}, 200);                    
+                }
+
             });                
         },
         closeSpace: function (element) {
@@ -258,10 +265,13 @@
             $('.mg-space').animate({
                 height: targetHeight + mgs.targetPadding
             }, 400, function () {
-                $('.mg-arrow').css({
-                    left: itemOffset.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
-                });
-                $('.mg-arrow').animate({top:-9}, 200);
+                if (mgs.useArrow) {
+                    $('.mg-arrow').css({
+                        left: itemOffset.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
+                    });
+                    $('.mg-arrow').animate({top:-9}, 200);                    
+                }
+
             });
         },
 
