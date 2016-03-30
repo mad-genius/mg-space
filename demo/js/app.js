@@ -1,11 +1,28 @@
 $(function() {
 
-    if($('.mg-space-init2').length){
-        $('.mg-space-init2').mgSpace({rowMargin:0, targetPadding:60});
+    if($('.no-grid').length){
+        $('.no-grid').mgSpace({
+            rowMargin:0, 
+            targetPadding:90,
+            breakpointColumns: [
+                {
+                    breakpoint: 0,
+                    column: 1
+                },
+                {
+                    breakpoint: 568,
+                    column: 2
+                },
+                {
+                    breakpoint: 768,
+                    column: 3
+                }                
+            ]
+        });
     }
 
-    if($('.mg-space-init3').length){
-        $('.mg-space-init3').mgSpace({useHash: true});
+    if($('.mg-history').length){
+        $('.mg-history').mgSpace({useHash: true});
     }
 
     if($('.mg-space-multiple').length){

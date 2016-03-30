@@ -6,23 +6,27 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="../src/mg-space.css">
     <style>
-.mg-row{float: left;width: 33.33333%;margin-bottom: 0}
-.mg-target { padding:30px 0;}
-.mg-target div {
-    float: left;
-    width: 25%;
-    text-align: center;
-    margin-bottom: 25px;
-}
-.mg-target img {
-    margin: 0 auto;
-}
-.mg-space {
-    margin-bottom: 0;
-}        
+        .mg-row{float: left;width: 100%;margin-bottom: 0}
+
+        @media (min-width: 569px) { 
+            .mg-row{width: 50%;}
+        }
+
+        @media (min-width: 769px) { 
+            .mg-row{width: 33.33333%;}
+        }
+        .mg-target div {
+            float: left;
+            width: 25%;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .mg-target img {
+            margin: 0 auto;
+        }        
     </style>
 </head>
-<body class="mg-space-init2">
+<body class="no-grid">
     <div class="wrapper">
         <div id="content">
             <div class="container vert">

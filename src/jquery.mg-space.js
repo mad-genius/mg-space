@@ -20,11 +20,15 @@
                 {
                     breakpoint: 768,
                     column: 3
+                },
+                {
+                    breakpoint: 1200,
+                    column: 4
                 }
             ],
             rowsWrapper: "mg-rows",
             row: "mg-row",
-            rowMargin: 25, // Default 25
+            rowMargin: 25, // Set to zero for gridless
             trigger: "mg-trigger",
             targetsWrapper: "mg-targets",
             target: "mg-target",
@@ -50,7 +54,7 @@
                 mgs = this.settings,
                 cols = mg.flowColumns($('.'+mgs.row, this.element));
 
-            // SET CURRENT COLUMNS
+            // SET CURRENT NUMBER OF COLUMNS
             $('.'+mgs.rowsWrapper).attr('data-cols',cols);
 
             // CHECK FOR HASH
@@ -58,21 +62,21 @@
                 setTimeout(function () {
                     var rowItem = $(window.location.hash+' .'+mgs.trigger).parent();
                     if (!$(rowItem).hasClass(mgs.row+'-open')) {
-                        $(rowItem).addClass(mgs.row+'-open');
-                        mg.openSpace(rowItem);
-                        mg.openTarget(rowItem);
-                        $('html, body').animate({
-                            scrollTop: $(rowItem).offset().top
-                        }, 400); 
-                    }
-                }, 500);
+                        mg.openRow(rowItem); 
+                    }                    
+                }, 400);
             }
 
+            // ADD ROW MARGIN IF GREATER THAN ZERO
+            if (mgs.rowMargin > 0) {
+                $(mg.element).prepend('<style scoped>.mg-row{margin-bottom:'+mgs.rowMargin+'px}</style>');
+            }
+            
             $(mg.element).on('click', '.'+mgs.trigger, function (ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
 
-                mg.toggleRow(this);
+                mg.rowController(this);
 
                 if (mgs.useHash) {
                     mg.activateHash($(this).attr('href'));
@@ -82,9 +86,9 @@
             $(mg.element).on('click', '.mg-close', function (ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
+                
                 var targetItem = $(this).parent().attr('data-target');
-
-                mg.toggleRow('#'+targetItem+' .'+mgs.trigger);
+                mg.closeRow($('#'+targetItem));
             });
 
             // CHANGE COLUMNS ON RESIZE EVENT
@@ -107,69 +111,78 @@
                     if (mgs.useArrow) {
                         $('.mg-arrow').css({
                             left: $('#'+targetItem).offset().left + parseInt($('#'+targetItem).css('padding-left')) + $('#'+targetItem).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
-                        });                        
+                        });
                     }
-
                 }
             });
 
             $(window).off('hashchange').on('hashchange', function(e) {
                 setTimeout(function () {
-                    mg.toggleRow(window.location.hash+' .'+mgs.trigger);
-                }, 500);
-            });            
+                    mg.rowController(window.location.hash+' .'+mgs.trigger);
+                }, 400);
+            });
         },
 
-        toggleRow: function (element) {
+        rowController: function (element) {
             var mg = this,
                 mgs = this.settings,
                 rowItem = $(element).parent(),
                 itemCurrent = $(rowItem).attr('data-row');
 
             if ($(rowItem).hasClass(mgs.row+'-open')) {
-                $(rowItem).removeClass(mgs.row+'-open');
-                mg.closeTarget();
-                mg.closeSpace();
+                // Close Row
+                mg.closeRow(rowItem);
 
             } else if ($('.'+mgs.row+'-open[data-row="' + itemCurrent + '"]').length) {
+                console.log('Same Row');
+
                 $('.'+mgs.row+'-open').removeClass(mgs.row+'-open');
                 $(rowItem).addClass(mgs.row+'-open');
                 mg.closeTarget();
 
                 mg.resizeSpace(rowItem);
-                // WORKING ON THIS mg.toggleTarget(rowItem);
                 mg.openTarget(rowItem);
+                mg.scrollToTop(rowItem);
 
-                $('html, body').animate({
-                    scrollTop: $(rowItem).offset().top
-                }, 400);                    
+            } else if ($('.mg-space').hasClass('mg-space-open')) {
+                console.log('New Row');
 
-            } else if ($('.mg-space').is(':visible')) {
                 $('.'+mgs.row+'-open').removeClass(mgs.row+'-open');
-                $(rowItem).addClass(mgs.row+'-open');
                 mg.closeTarget();
 
                 $('.mg-space').slideToggle(400, function () {
-                    
-                    mg.openSpace(rowItem);
-                    mg.openTarget(rowItem);
-
-                    $('html, body').animate({
-                        scrollTop: $(rowItem).offset().top
-                    }, 400);                        
+                    mg.openRow(rowItem);
                 });
 
             } else {
-
-                $(rowItem).addClass(mgs.row+'-open');
-                mg.openSpace(rowItem);
-                mg.openTarget(rowItem);
-                $('html, body').animate({
-                    scrollTop: $(rowItem).offset().top
-                }, 400);
-
+                // Open Row
+                mg.openRow(rowItem);
             };
         },
+
+        openRow: function (element) {
+            var mg = this,
+                mgs = this.settings;
+
+            console.log('Open Row');
+
+            $(element).addClass(mgs.row+'-open');
+            mg.openSpace(element);
+            mg.openTarget(element);
+            mg.scrollToTop(element);
+        },
+
+        closeRow: function (element) {
+            var mg = this,
+                mgs = this.settings;
+
+            console.log('Close Row');
+
+            $(element).removeClass(mgs.row+'-open');
+            mg.closeTarget();
+            mg.closeSpace();
+        },        
+
         openTarget: function (element) {
             var mgs = this.settings,
                 itemId = $(element).attr('id'),
@@ -185,10 +198,13 @@
                 .css({
                     position: 'absolute',
                     top: itemOffset.top + itemHeight + mgs.rowMargin,
-                    zIndex: 2
+                    zIndex: 2,
+                    paddingTop: mgs.targetPadding/2,
+                    paddingBottom: mgs.targetPadding/2
                 })
                 .slideToggle();
-        },            
+        },
+
         closeTarget: function () {
             var mgs = this.settings;
 
@@ -197,25 +213,6 @@
             $('.'+mgs.target+'-open').slideToggle(400, function () {
                 $(this).removeClass(mgs.target+'-open').removeAttr('style');
             });
-        },
-        toggleTarget: function (element) { // WORKING HERE
-            var mgs = this.settings,
-                itemId = $(element).attr('id'),
-                itemOffset = $(element).offset(),
-                itemHeight = $(element).height(),
-                itemTarget = '[data-target="' + itemId + '"]';
-
-            $(itemTarget).prepend('<a href="#" class="mg-close"></a>');
-
-            $(itemTarget)
-                .removeAttr('style')
-                .addClass(mgs.target+'-open')
-                .css({
-                    position: 'absolute',
-                    top: itemOffset.top + itemHeight + mgs.rowMargin,
-                    zIndex: 2
-                })
-                .show();
         },            
 
         openSpace: function (element) {
@@ -235,21 +232,31 @@
             }
 
 
-            $('.mg-space[data-row="' + itemCurrent + '"]').css('height', targetHeight + mgs.targetPadding).slideToggle(400, function() {
+            $('.mg-space[data-row="' + itemCurrent + '"]').css({
+                height: targetHeight + mgs.targetPadding,
+                marginBottom: mgs.rowMargin
+            }).slideToggle(400, function() {
+                $('.mg-space').addClass('mg-space-open');
                 if (mgs.useArrow) {
                     $('.mg-arrow').css({
                         left: itemOffset.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
                     });
-                    $('.mg-arrow').animate({top:-9}, 200);                    
+                    $('.mg-arrow').animate({top:-9}, 200);
                 }
+            });
+        },
 
-            });                
-        },
         closeSpace: function (element) {
-                $('.mg-space').slideToggle(400, function () {
+            var mgs = this.settings;
+
+            $('.mg-space').slideToggle(400, function () {
+                $('.mg-space').removeClass('mg-space-open');
+                if (mgs.useArrow) {
                     $('.mg-arrow').animate({top:0}, 200);
-                });
+                }
+            });
         },
+
         resizeSpace: function (element) {
             var mgs = this.settings,
                 itemId = $(element).attr('id'),
@@ -260,7 +267,9 @@
             $(itemTarget).css('position','fixed').show();
             targetHeight = $(itemTarget).height();
 
-            $('.mg-arrow').animate({top:0});
+            if (mgs.useArrow) {
+                $('.mg-arrow').animate({top:0});
+            }
 
             $('.mg-space').animate({
                 height: targetHeight + mgs.targetPadding
@@ -269,7 +278,7 @@
                     $('.mg-arrow').css({
                         left: itemOffset.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
                     });
-                    $('.mg-arrow').animate({top:-9}, 200);                    
+                    $('.mg-arrow').animate({top:-9}, 200);
                 }
 
             });
@@ -327,6 +336,12 @@
                 // Otherwise fallback to the hash update for sites that don't support the history api
                 window.location.hash = hash;
             }
+        },
+
+        scrollToTop: function (element) {
+            $('html, body').animate({
+                scrollTop: $(element).offset().top
+            }, 400);
         }
     });
 
