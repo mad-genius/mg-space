@@ -1,10 +1,16 @@
+.mg-rows {
+    position:relative;
+}
 .mg-space {
     display:none;
+    position:relative;
+    width:100%;
+    float:left;
 }
 .mg-target {
     display:none;
-    background: #222;
-    color: #888;
+    background:#222;
+    color:#888;
 }
 .mg-target-open {
     position:absolute;

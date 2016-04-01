@@ -1,5 +1,23 @@
-// the semi-colon before function invocation is a safety net against concatenated
-// scripts and/or other plugins which may not be closed properly.
+/*
+*  __  __  _____    _____ 
+* |  \/  |/ ____|  / ____|
+* | \  / | |  __  | (___  _ __   __ _  ___ ___ 
+* | |\/| | | |_ |  \___ \| '_ \ / _` |/ __/ _ \
+* | |  | | |__| |  ____) | |_) | (_| | (_|  __/
+* |_|  |_|\_____| |_____/| .__/ \__,_|\___\___|
+*                        | |
+*                        |_|
+* MG Space
+*
+* Copyright (c) 2016 Bryce Mullican (http://brycemullican.com)
+*
+* By Bryce Mullican (@BryceMullican)
+* Licensed under the MIT license.
+*
+* @link http://github.com/?
+* @author Bryce Mullican
+* @version 1.0.0
+*/
 ;(function ( $, window, document, undefined ) {
 
     "use strict";
@@ -34,8 +52,9 @@
             target: "mg-target",
             targetPadding: 120,
             useHash: false, // Set to true for history
-            useArrow: true
-        };
+            useArrow: true           
+        },
+        afterChange = true;
 
     // The actual plugin constructor
     function MGSpace ( element, options ) {
@@ -71,6 +90,14 @@
             if (mgs.rowMargin > 0) {
                 $(mg.element).prepend('<style scoped>.mg-row{margin-bottom:'+mgs.rowMargin+'px}</style>');
             }
+
+            $('.'+mgs.row, this.element).each(function(){
+                $(this).attr('data-id', $(this).index());
+            });
+
+            $('.'+mgs.target, this.element).each(function(){
+                $(this).attr('data-id', $(this).index());
+            });            
             
             $(mg.element).on('click', '.'+mgs.trigger, function (ev) {
                 ev.preventDefault();
@@ -86,8 +113,8 @@
             $(mg.element).on('click', '.mg-close', function (ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
-                
-                var targetItem = $(this).parent().attr('data-target');
+
+                var targetItem = $(this).parent().attr('data-id');
                 mg.closeRow($('#'+targetItem));
             });
 
@@ -105,13 +132,13 @@
 
 
                 if($('.'+mgs.target+'-open').length){
-                    var targetItem = $('.'+mgs.target+'-open').attr('data-target');
+                    var targetItem = $('.'+mgs.target+'-open').attr('data-id');
                     $('.'+mgs.target+'-open').css('top',$('#'+targetItem).offset().top+$('#'+targetItem).height() + mgs.rowMargin );
                     $('.mg-space').css('height',$('.'+mgs.target+'-open').height()+mgs.targetPadding);
                     if (mgs.useArrow) {
                         $('.mg-arrow').css({
-                            left: $('#'+targetItem).offset().left + parseInt($('#'+targetItem).css('padding-left')) + $('#'+targetItem).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
-                        });
+                            left: $('#'+targetItem).position().left + parseInt($('#'+targetItem).css('padding-left')) + $('#'+targetItem).width()/2 - 10,
+                        });                        
                     }
                 }
             });
@@ -127,56 +154,67 @@
             var mg = this,
                 mgs = this.settings,
                 rowItem = $(element).parent(),
-                itemCurrent = $(rowItem).attr('data-row');
+                itemCurrent = $(rowItem).attr('data-row'),
+                trigger = element;
+
+            // Before Anything Fire Event
+            $(mg.element).trigger('beforeChange', [mg, trigger, rowItem]);
 
             if ($(rowItem).hasClass(mgs.row+'-open')) {
                 // Close Row
                 mg.closeRow(rowItem);
 
             } else if ($('.'+mgs.row+'-open[data-row="' + itemCurrent + '"]').length) {
-                console.log('Same Row');
-
-                $('.'+mgs.row+'-open').removeClass(mgs.row+'-open');
-                $(rowItem).addClass(mgs.row+'-open');
+                // Same Row
+                //console.log('Same Row');
                 mg.closeTarget();
-
                 mg.resizeSpace(rowItem);
                 mg.openTarget(rowItem);
                 mg.scrollToTop(rowItem);
 
             } else if ($('.mg-space').hasClass('mg-space-open')) {
-                console.log('New Row');
-
-                $('.'+mgs.row+'-open').removeClass(mgs.row+'-open');
+                // New Row
+                //console.log('New Row');
                 mg.closeTarget();
-
+                afterChange = false;
                 $('.mg-space').slideToggle(400, function () {
                     mg.openRow(rowItem);
+                    $(mg.element).trigger('afterChange', [mg, trigger, rowItem]);
                 });
 
             } else {
                 // Open Row
                 mg.openRow(rowItem);
             };
+            //After Everything Fire Event
+            if (afterChange) {
+               $(mg.element).trigger('afterChange', [mg, trigger, rowItem]); 
+            }
+            afterChange = true;
         },
 
         openRow: function (element) {
             var mg = this,
-                mgs = this.settings;
+                mgs = this.settings,
+                rowItem = element;
 
-            console.log('Open Row');
+            // Before Open Row Event Handler
+            $(mg.element).trigger('beforeOpenRow', [mg, rowItem]);
 
-            $(element).addClass(mgs.row+'-open');
+            //console.log('Open Row');
             mg.openSpace(element);
             mg.openTarget(element);
             mg.scrollToTop(element);
+
+            // Before Open Row Event Handler
+            $(mg.element).trigger('afterOpenRow', [mg, rowItem]);
         },
 
         closeRow: function (element) {
             var mg = this,
                 mgs = this.settings;
 
-            console.log('Close Row');
+            //console.log('Close Row');
 
             $(element).removeClass(mgs.row+'-open');
             mg.closeTarget();
@@ -184,12 +222,14 @@
         },        
 
         openTarget: function (element) {
-            var mgs = this.settings,
-                itemId = $(element).attr('id'),
+            var mg = this,
+                mgs = this.settings,
+                itemId = $(element).attr('data-id'),
                 itemOffset = $(element).offset(),
                 itemHeight = $(element).height(),
-                itemTarget = '[data-target="' + itemId + '"]';
+                itemTarget = $('.'+mgs.target+'[data-id="' + itemId + '"]', mg.element);
 
+            $(element).addClass(mgs.row+'-open');
             $(itemTarget).prepend('<a href="#" class="mg-close"></a>');
 
             $(itemTarget)
@@ -208,6 +248,7 @@
         closeTarget: function () {
             var mgs = this.settings;
 
+            $('.'+mgs.row+'-open').removeClass(mgs.row+'-open');
             $('.'+mgs.target+'-open').css('z-index',1);
             $('.mg-close').remove();
             $('.'+mgs.target+'-open').slideToggle(400, function () {
@@ -216,11 +257,12 @@
         },            
 
         openSpace: function (element) {
-            var mgs = this.settings,
+            var mg = this,
+                mgs = this.settings,
                 itemCurrent = $(element).attr('data-row'),
-                itemId = $(element).attr('id'),
-                itemOffset = $(element).offset(),
-                itemTarget = '[data-target="' + itemId + '"]',
+                itemId = $(element).attr('data-id'),
+                itemPosition = $(element).position(),
+                itemTarget = $('.'+mgs.target+'[data-id="' + itemId + '"]', mg.element),
                 targetHeight = null;
 
             $(itemTarget).css('position','fixed').show();
@@ -228,9 +270,8 @@
 
             if (!$('.mg-space[data-row="' + itemCurrent + '"]').length) {
                 $('.mg-space').remove();
-                $('.'+mgs.rowsWrapper).find('[data-row="' + itemCurrent + '"]').last().after('<div class="mg-space sm-12 lg-12" data-row="' + itemCurrent + '"><div class="mg-arrow"></div></div>');
+                $('.'+mgs.rowsWrapper).find('[data-row="' + itemCurrent + '"]').last().after('<div class="mg-space" data-row="' + itemCurrent + '"><div class="mg-arrow"></div></div>');
             }
-
 
             $('.mg-space[data-row="' + itemCurrent + '"]').css({
                 height: targetHeight + mgs.targetPadding,
@@ -239,7 +280,7 @@
                 $('.mg-space').addClass('mg-space-open');
                 if (mgs.useArrow) {
                     $('.mg-arrow').css({
-                        left: itemOffset.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
+                        left: itemPosition.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - 10,
                     });
                     $('.mg-arrow').animate({top:-9}, 200);
                 }
@@ -258,10 +299,11 @@
         },
 
         resizeSpace: function (element) {
-            var mgs = this.settings,
-                itemId = $(element).attr('id'),
-                itemOffset = $(element).offset(),
-                itemTarget = '[data-target="' + itemId + '"]',
+            var mg = this,
+                mgs = this.settings,
+                itemId = $(element).attr('data-id'),
+                itemPosition = $(element).position(),
+                itemTarget = $('.'+mgs.target+'[data-id="' + itemId + '"]', mg.element),
                 targetHeight = null;
 
             $(itemTarget).css('position','fixed').show();
@@ -276,7 +318,7 @@
             }, 400, function () {
                 if (mgs.useArrow) {
                     $('.mg-arrow').css({
-                        left: itemOffset.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - parseInt($('#content > .container').css('margin-left')) - 10
+                        left: itemPosition.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - 10,
                     });
                     $('.mg-arrow').animate({top:-9}, 200);
                 }
@@ -304,11 +346,10 @@
                 if(parent==null) {
                     parent=new_parent;
                 }
-                
+
                 if(parent != new_parent){
                     parent=$(mg.element).index();
-                }   
-
+                }
                 $(this).attr('data-row', parent+'-'+j);
                 if(k==col){
                     j++,

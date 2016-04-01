@@ -1,5 +1,25 @@
 $(function() {
 
+    if ($('.default').length) {
+        $('.mg-space-init').on('beforeChange', function(event, mgSpace, trigger, rowItem){
+          $(rowItem).addClass('event-fired');
+          //console.log('Fire Before Everything');
+        });
+
+        $('.mg-space-init').on('afterChange', function(event, mgSpace, trigger, rowItem){
+          $(rowItem).addClass('event-fired').siblings().removeClass('event-fired');
+          //console.log('Fire After Everything');
+        });        
+
+        $('.mg-space-init').on('beforeOpenRow', function(event, mgSpace, rowItem){
+          //console.log('Fire Before Open Row');
+        });
+
+        $('.mg-space-init').on('afterOpenRow', function(event, mgSpace, rowItem){
+          //console.log('Fire After Open Row');
+        });
+    }
+
     if($('.no-grid').length){
         $('.no-grid').mgSpace({
             rowMargin:0, 
