@@ -22,11 +22,13 @@ Basic markup.
         </div>        
     </div>
 ```
-In a basic scenario, you just need to import `jquery`, `jquery.mg-space.js` and call the mgSpace() function on the wrapper containing `.mg-rows` and `.mg-targets`.
+In a basic scenario, you just need to import `mg-space.css`, `jquery`, `jquery.mg-space.js` and call the mgSpace() function on the wrapper containing `.mg-rows` and `.mg-targets`.
 
 ```html
+    <link rel="stylesheet" href="mg-space.css">
+    ...
     <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
-    <script src="js/jquery.mg-space.js"></script>
+    <script src="jquery.mg-space.js"></script>
     <script>
         $(function(){
             $('.mg-space-init').mgSpace();

@@ -50,10 +50,11 @@
             target: "mg-target",
             targetPadding: 120,
             useHash: false, // Set to true for history
-            hashTitle: "row",            
+            hashTitle: "#item", // Must include `#` hash symbol           
             useArrow: true           
         },
-        afterChange = true;
+        afterChange = true,
+        activatingHash = false;
 
     // The actual plugin constructor
     function MGSpace ( element, options ) {
@@ -78,10 +79,13 @@
             // CHECK FOR HASH
             if (window.location.hash && mgs.useHash) {
                 setTimeout(function () {
-                    var rowItem = $(window.location.hash+' .'+mgs.trigger).parent();
+                    var sectionID =  window.location.hash.replace(mgs.hashTitle, "").split('-'),
+                        rowItem = '[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
+                    //console.log('LOADING HASH');
                     if (!$(rowItem).hasClass(mgs.row+'-open')) {
-                        mg.openRow(rowItem); 
-                    }                    
+                        activatingHash = true;
+                        mg.openRow(rowItem);
+                    }
                 }, 400);
             }
 
@@ -91,22 +95,19 @@
             }
 
             $('.'+mgs.row, this.element).each(function(){
-                $(this).attr('data-id', $(this).index());
+                $(this).attr('data-id', $(this).index()+1);
             });
 
             $('.'+mgs.target, this.element).each(function(){
-                $(this).attr('data-id', $(this).index());
+                $(this).attr('data-id', $(this).index()+1);
             });            
             
             $(mg.element).on('click', '.'+mgs.row, function (ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
 
+                activatingHash = false;
                 mg.rowController(this);
-
-                if (mgs.useHash) {
-                    mg.activateHash($(this).attr('href'));
-                }
             });
 
             $(mg.element).on('click', '.mg-close', function (ev) {
@@ -114,7 +115,7 @@
                 ev.stopPropagation();
 
                 var targetItem = $(this).parent().attr('data-id');
-                mg.closeRow($('#'+targetItem));
+                mg.closeRow($('.'+mgs.row+'-open[data-id="' + targetItem + '"]'));
             });
 
             // CHANGE COLUMNS ON RESIZE EVENT
@@ -132,11 +133,11 @@
 
                 if($('.'+mgs.target+'-open').length){
                     var targetItem = $('.'+mgs.target+'-open').attr('data-id');
-                    $('.'+mgs.target+'-open').css('top',$('#'+targetItem).offset().top+$('#'+targetItem).height() + mgs.rowMargin );
+                    $('.'+mgs.target+'-open').css('top',$('.'+mgs.row+'-open[data-id="' + targetItem + '"]').offset().top+$('.'+mgs.row+'-open[data-id="' + targetItem + '"]').height() + mgs.rowMargin );
                     $('.mg-space').css('height',$('.'+mgs.target+'-open').height()+mgs.targetPadding);
                     if (mgs.useArrow) {
                         $('.mg-arrow').css({
-                            left: $('#'+targetItem).position().left + parseInt($('#'+targetItem).css('padding-left')) + $('#'+targetItem).width()/2 - 10,
+                            left: $('.'+mgs.row+'-open[data-id="' + targetItem + '"]').position().left + parseInt($('.'+mgs.row+'-open[data-id="' + targetItem + '"]').css('padding-left')) + $('.'+mgs.row+'-open[data-id="' + targetItem + '"]').width()/2 - 10,
                         });                        
                     }
                 }
@@ -144,8 +145,14 @@
 
             $(window).off('hashchange').on('hashchange', function(e) {
                 setTimeout(function () {
-                    mg.rowController(window.location.hash+' .'+mgs.trigger);
-                }, 400);
+                    var sectionID =  window.location.hash.replace(mgs.hashTitle, "").split('-'),
+                        rowItem = '[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
+                    //console.log('HASH CHANGE');
+                    if (!$(rowItem).hasClass(mgs.row+'-open')) {
+                        activatingHash = true;
+                        mg.rowController(rowItem);
+                    }
+                }, 400);                
             });
         },
 
@@ -153,7 +160,8 @@
             var mg = this,
                 mgs = this.settings,
                 rowItem = element,
-                itemCurrent = $(rowItem).attr('data-row');
+                itemSection = $(rowItem).attr('data-section'),
+                itemRow = $(rowItem).attr('data-row');
 
             // Before Anything Fire Event
             $(mg.element).trigger('beforeChange', [mg, rowItem]);
@@ -162,7 +170,7 @@
                 // Close Row
                 mg.closeRow(rowItem);
 
-            } else if ($('.'+mgs.row+'-open[data-row="' + itemCurrent + '"]').length) {
+            } else if ($('.'+mgs.row+'-open[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').length) {
                 // Same Row
                 //console.log('Same Row');
                 mg.closeTarget();
@@ -202,7 +210,7 @@
             //console.log('Open Row');
             mg.openSpace(element);
             mg.openTarget(element);
-            mg.scrollToTop(element);
+            mg.scrollToTop(element);            
 
             // Before Open Row Event Handler
             $(mg.element).trigger('afterOpenRow', [mg, rowItem]);
@@ -222,12 +230,13 @@
         openTarget: function (element) {
             var mg = this,
                 mgs = this.settings,
-                itemId = $(element).attr('data-id'),
-                itemOffset = $(element).offset(),
-                itemHeight = $(element).height(),
+                rowItem = element,
+                itemId = $(rowItem).attr('data-id'),
+                itemOffset = $(rowItem).offset(),
+                itemHeight = $(rowItem).height(),
                 itemTarget = $('.'+mgs.target+'[data-id="' + itemId + '"]', mg.element);
 
-            $(element).addClass(mgs.row+'-open');
+            $(rowItem).addClass(mgs.row+'-open');
             $(itemTarget).prepend('<a href="#" class="mg-close"></a>');
 
             $(itemTarget)
@@ -241,6 +250,16 @@
                     paddingBottom: mgs.targetPadding/2
                 })
                 .slideToggle();
+
+            if (mgs.useHash && !activatingHash) {
+                var section = $(rowItem).attr('data-section'),
+                    id = $(rowItem).attr('data-id');
+                if (false) {
+
+                } else {
+                    mg.activateHash(mgs.hashTitle+section+'-'+id);
+                }
+            }
         },
 
         closeTarget: function () {
@@ -257,7 +276,8 @@
         openSpace: function (element) {
             var mg = this,
                 mgs = this.settings,
-                itemCurrent = $(element).attr('data-row'),
+                itemSection = $(element).attr('data-section'),
+                itemRow = $(element).attr('data-row'),
                 itemId = $(element).attr('data-id'),
                 itemPosition = $(element).position(),
                 itemTarget = $('.'+mgs.target+'[data-id="' + itemId + '"]', mg.element),
@@ -266,12 +286,12 @@
             $(itemTarget).css('position','fixed').show();
             targetHeight = $(itemTarget).height();
 
-            if (!$('.mg-space[data-row="' + itemCurrent + '"]').length) {
+            if (!$('.mg-space[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').length) {
                 $('.mg-space').remove();
-                $('.'+mgs.rowsWrapper).find('[data-row="' + itemCurrent + '"]').last().after('<div class="mg-space" data-row="' + itemCurrent + '"><div class="mg-arrow"></div></div>');
+                $('.'+mgs.rowsWrapper).find('[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').last().after('<div class="mg-space" data-section="' + itemSection + '" data-row="' + itemRow + '"><div class="mg-arrow"></div></div>');
             }
 
-            $('.mg-space[data-row="' + itemCurrent + '"]').css({
+            $('.mg-space[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').css({
                 height: targetHeight + mgs.targetPadding,
                 marginBottom: mgs.rowMargin
             }).slideToggle(400, function() {
@@ -348,7 +368,8 @@
                 if(parent != new_parent){
                     parent=$(mg.element).index();
                 }
-                $(this).attr('data-row', parent+'-'+j);
+                $(this).attr('data-section', parent);
+                $(this).attr('data-row', j);
                 if(k==col){
                     j++,
                     k=0;
