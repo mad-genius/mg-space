@@ -35,10 +35,9 @@ In a basic scenario, you just need to import `jquery`, `jquery.mg-space.js` and 
 ```
 ## Demo
 
-You can view a few demo examples using mgSpace [here](https://github.com/Bryce-Mullican//tree/develop/demo)
+You can view a few demo examples using mgSpace under the demo folder.
 
 ## Licence
 
-Copyright (c) 2011-2012 Bryce Mullican
+Copyright (c) 2011-2012 Bryce Mullican.
 Licensed under the MIT license.
-(https://github.com/Bryce-Mullican//blob/master/MIT-LICENSE.txt)
