@@ -1,6 +1,9 @@
 .mg-rows {
     position:relative;
 }
+.mg-row {
+    cursor: pointer;
+}
 .mg-space {
     display:none;
     position:relative;

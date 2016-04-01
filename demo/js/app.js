@@ -1,6 +1,8 @@
 $(function() {
 
     if ($('.default').length) {
+        $('.mg-space-init').mgSpace();
+        
         $('.mg-space-init').on('beforeChange', function(event, mgSpace, trigger, rowItem){
           $(rowItem).addClass('event-fired');
           //console.log('Fire Before Everything');

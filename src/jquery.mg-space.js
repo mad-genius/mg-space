@@ -25,7 +25,6 @@
     // Create the defaults once
     var mgSpace = "mgSpace",
         defaults = {
-            autoSelector: '.mg-space-init',
             breakpointColumns: [
                 {
                     breakpoint: 0,
@@ -47,11 +46,11 @@
             rowsWrapper: "mg-rows",
             row: "mg-row",
             rowMargin: 25, // Set to zero for gridless
-            trigger: "mg-trigger",
             targetsWrapper: "mg-targets",
             target: "mg-target",
             targetPadding: 120,
             useHash: false, // Set to true for history
+            hashTitle: "row",            
             useArrow: true           
         },
         afterChange = true;
@@ -99,7 +98,7 @@
                 $(this).attr('data-id', $(this).index());
             });            
             
-            $(mg.element).on('click', '.'+mgs.trigger, function (ev) {
+            $(mg.element).on('click', '.'+mgs.row, function (ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
 
@@ -153,12 +152,11 @@
         rowController: function (element) {
             var mg = this,
                 mgs = this.settings,
-                rowItem = $(element).parent(),
-                itemCurrent = $(rowItem).attr('data-row'),
-                trigger = element;
+                rowItem = element,
+                itemCurrent = $(rowItem).attr('data-row');
 
             // Before Anything Fire Event
-            $(mg.element).trigger('beforeChange', [mg, trigger, rowItem]);
+            $(mg.element).trigger('beforeChange', [mg, rowItem]);
 
             if ($(rowItem).hasClass(mgs.row+'-open')) {
                 // Close Row
@@ -179,7 +177,7 @@
                 afterChange = false;
                 $('.mg-space').slideToggle(400, function () {
                     mg.openRow(rowItem);
-                    $(mg.element).trigger('afterChange', [mg, trigger, rowItem]);
+                    $(mg.element).trigger('afterChange', [mg, rowItem]);
                 });
 
             } else {
@@ -188,7 +186,7 @@
             };
             //After Everything Fire Event
             if (afterChange) {
-               $(mg.element).trigger('afterChange', [mg, trigger, rowItem]); 
+               $(mg.element).trigger('afterChange', [mg, rowItem]); 
             }
             afterChange = true;
         },
@@ -395,10 +393,5 @@
             }
         });
     };
-
-    // automatically find and run mgSpace
-    $(function() {
-        $( defaults.autoSelector ).mgSpace();
-    });
 
 })( jQuery, window, document );
