@@ -1,7 +1,7 @@
 .mg-rows {
     position:relative;
 }
-.mg-row {
+.mg-trigger{
     cursor: pointer;
 }
 .mg-space {
