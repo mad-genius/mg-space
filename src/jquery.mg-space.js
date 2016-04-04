@@ -1,12 +1,12 @@
 /*
-*  __  __  _____    _____ 
-* |  \/  |/ ____|  / ____|
-* | \  / | |  __  | (___  _ __   __ _  ___ ___ 
-* | |\/| | | |_ |  \___ \| '_ \ / _` |/ __/ _ \
-* | |  | | |__| |  ____) | |_) | (_| | (_|  __/
-* |_|  |_|\_____| |_____/| .__/ \__,_|\___\___|
-*                        | |
-*                        |_|
+*  __  __  _____   _____ 
+* |  \/  |/ ____| / ____|
+* | \  / | |  __ | (___  _ __   __ _  ___ ___    _  ___ 
+* | |\/| | | |_ | \___ \| '_ \ / _` |/ __/ _ \  (_)/ __| 
+* | |  | | |__| | ____) | |_) | (_| | (_|  __/_ | |\__ \
+* |_|  |_|\_____||_____/| .__/ \__,_|\___\___(_)| ||___/
+*                       | |                    _| |
+*                       |_|                   |___,
 * MG Space
 *
 * Copyright (c) 2016 Bryce Mullican (http://brycemullican.com)
@@ -50,12 +50,11 @@
             target: ".mg-target",
             targetPadding: 120,
             trigger: ".mg-trigger",
+            close: ".mg-close",
             useHash: false, // Set to true for history
             hashTitle: "#item", // Must include `#` hash symbol           
-            useArrow: true           
-        },
-        afterChange = true,
-        activatingHash = false;
+            useArrow: true
+        };
 
     // The actual plugin constructor
     function MGSpace ( element, options ) {
@@ -64,7 +63,7 @@
         _.$mgSpace = $(element);
         _.options = $.extend( {}, defaults, options );
         _._defaults = defaults;
-        _._name = mgSpace;
+        _._name =  ;
         _.init();
     }
 
@@ -72,66 +71,284 @@
     $.extend(MGSpace.prototype, {
         init: function () {
             var _ = this,
-                cols = _.flowColumns($(_.options.row, _.$mgSpace));
+                cols = _.setColumns($(_.options.row, _.$ ));
 
-            // SET CURRENT NUMBER OF COLUMNS
-            $(_.options.rowWrapper).attr('data-cols',cols);
+            // Set Columns
+            $(_.options.rowWrapper, _.$mgSpace).attr('data-cols', cols);
+
+            _.$rows = _.$mgSpace.find(_.options.rowWrapper).children('');
+            _.$targets = _.$mgSpace.find(_.options.targetWrapper).children('');
+
+            // Set Rows and Targets
+            _.setRows($(_.$rows, _.$mgSpace));
+            _.setRows($(_.$targets, _.$mgSpace));
+
+            // Add Row Margin if Greater Than Zero (0)
+            if (_.options.rowMargin > 0) {
+                _.$mgSpace.prepend('<style scoped>.mg-row{margin-bottom:'+_.options.rowMargin+'px}</style>');
+            }
+
+            _.$mgSpace.on('click.trigger', _.options.trigger, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                _.rowController(this, event);
+            });
+
+            _.$mgSpace.on('click.close', _.options.close, {close:true}, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                _.rowController(this, event);
+            });
 
             $(window).on('resize', function () {
-                cols = _.flowColumns($(_.options.row, _.$mgSpace));
-                $(_.options.rowWrapper).attr('data-cols', cols);
-            });
+                cols = _.setColumns($(_.options.row, _.$mgSpace));
+                _.setRows($(_.options.row, _.$mgSpace));
 
-            _.$mgSpace.on('click', _.options.trigger, function (event) {
-                event.preventDefault();
-                event.stopPropagation();
+                if (cols != $(_.options.rowWrapper).attr('data-cols')) {
+                    $(_.options.rowWrapper).attr('data-cols',cols);
 
-                console.log('Click Row');
-            });
+                    // Close
+                    $(_.options.target+'-open').removeClass(_.stripDot(_.options.target)+'-open').removeAttr('style');
+                    $(_.options.row+'-open').removeClass(_.stripDot(_.options.row)+'-open');
+                    $('.mg-space').remove();
+                }
 
-            _.$mgSpace.on('click', _.options.close, function (event) {
-                event.preventDefault();
-                event.stopPropagation();
 
-                console.log('Click Close');
+                if($(_.options.target+'-open').length){
+                    var targetItem = $(_.options.target+'-open').attr('data-id');
+                    $(_.options.target+'-open').css('top',$(_.options.row+'-open[data-id="' + targetItem + '"]').offset().top+$(_.options.row+'-open[data-id="' + targetItem + '"]').height() + _.options.rowMargin );
+                    $('.mg-space').css('height',$(_.options.target+'-open').height()+_.options.targetPadding);
+                    if (_.options.useArrow) {
+                        $('.mg-arrow').css({
+                            left: $(_.options.row+'-open[data-id="' + targetItem + '"]').position().left + parseInt($(_.options.row+'-open[data-id="' + targetItem + '"]').css('padding-left')) + $(_.options.row+'-open[data-id="' + targetItem + '"]').width()/2 - 10,
+                        });                        
+                    }
+                }                
             });            
         },
 
-        rowController: function (element) {
+        rowController: function (element, event) {
+            var _ = this,
+                rowItem = $(element).parent(),
+                itemSection = $(rowItem).attr('data-section'),
+                itemRow = $(rowItem).attr('data-row'),
+                itemId = $(rowItem).attr('data-id');
+
+            if (event.data && event.data.close) {
+                _.closeRow();
+            } else {
+                if ($(rowItem).hasClass(_.stripDot(_.options.row)+'-open')) {
+                    _.closeRow();
+                } else if ($(_.options.row+'-open[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').length) {
+                    // Same Row
+                    console.log('Same Row');
+
+                    _.closeTarget();
+                    _.resizeSpace(rowItem);
+                    _.openTarget(rowItem);
+                    _.scrollToTop(rowItem);                    
+                } else if ($('.mg-space').hasClass('mg-space-open')) {
+                    // New Row
+                    console.log('New Row');
+
+                    _.closeTarget();
+                    $('.mg-space').slideToggle(400, function () {
+                        _.openRow(rowItem);
+                    });
+                } else {
+                    _.openRow(rowItem);
+                }
+            }
         },
 
         openRow: function (element) {
+            var _ = this;
+
+            // Before Open Row Event Handler
+            _.$mgSpace.trigger('beforeOpenRow', [_, element]);
+
+            console.log('Open Row');
+
+            _.openSpace(element);
+            _.openTarget(element);
+            _.scrollToTop(element); 
+            
+            // After Open Row Event Handler
+            _.$mgSpace.trigger('afterOpenRow', [_, element]);
         },
 
-        closeRow: function (element) {
+        closeRow: function () {
+            var _ = this;
+
+            console.log('Close Row');
+
+            _.closeTarget();
+            _.closeSpace();
         },        
 
         openTarget: function (element) {
+            console.log('Open Target');
+
+            var _ = this,
+                itemId = $(element).attr('data-id'),
+                itemOffset = $(element).offset(),
+                itemHeight = $(element).height(),
+                $itemTarget = $(_.options.target+'[data-id="' + itemId + '"]', _.$mgSpace);
+
+            $(element).addClass(_.stripDot(_.options.row)+'-open');
+
+            $itemTarget.prepend('<a href="#" class="mg-close"></a>');
+
+            $itemTarget
+                .removeAttr('style')
+                .addClass(_.stripDot(_.options.target)+'-open')
+                .css({
+                    position: 'absolute',
+                    top: itemOffset.top + itemHeight + _.options.rowMargin,
+                    zIndex: 2,
+                    paddingTop: _.options.targetPadding/2,
+                    paddingBottom: _.options.targetPadding/2
+                })
+                .slideToggle();            
         },
 
-        closeTarget: function (element) {
+        closeTarget: function () {
+            var _ = this;
+
+            console.log('Close Target');            
+            
+            $(_.options.row+'-open').removeClass(_.stripDot(_.options.row)+'-open');
+            $(_.options.target+'-open').css('z-index',1);
+            $('.mg-close').remove();
+            $(_.options.target+'-open').slideToggle(400, function () {
+                $(this).removeClass(_.stripDot(_.options.target)+'-open').removeAttr('style');
+            });            
         },            
 
         openSpace: function (element) {
+            var _ = this,
+                itemSection = $(element).attr('data-section'),
+                itemRow = $(element).attr('data-row'),
+                itemId = $(element).attr('data-id'),
+                itemPosition = $(element).position(),
+                $itemTarget = $(_.options.target+'[data-section="' + itemSection + '"][data-id="' + itemId + '"]', _.$mgSpace),
+                targetHeight;
+
+            console.log('Open Space');
+
+            $itemTarget.css('position','fixed').show();
+            targetHeight = $itemTarget.height();            
+
+            if (!$('.mg-space[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').length) {
+                $('.mg-space').remove();
+                $(_.options.rowWrapper).find('[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').last().after('<div class="mg-space" data-section="' + itemSection + '" data-row="' + itemRow + '"><div class="mg-arrow"></div></div>');
+            }
+
+            $('.mg-space[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').css({
+                height: targetHeight + _.options.targetPadding,
+                marginBottom: _.options.rowMargin
+            }).slideToggle(400, function() {
+                $('.mg-space').addClass('mg-space-open');
+                if (_.options.useArrow) {
+                    $('.mg-arrow').css({
+                        left: itemPosition.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - 10,
+                    });
+                    $('.mg-arrow').animate({top:-9}, 200);
+                }
+            });                        
         },
 
-        closeSpace: function (element) {
+        closeSpace: function () {
+            var _ = this;
+
+            console.log('Close Space');            
+
+            $('.mg-space').slideToggle(400, function () {
+                $('.mg-space').removeClass('mg-space-open');
+                if (_.options.useArrow) {
+                    $('.mg-arrow').animate({top:0}, 200);
+                }
+            });            
         },
 
         resizeSpace: function (element) {
+            var _ = this,
+                itemId = $(element).attr('data-id'),
+                itemSection = $(element).attr('data-section'),
+                itemPosition = $(element).position(),
+                $itemTarget = $(_.options.target+'[data-section="' + itemSection + '"][data-id="' + itemId + '"]', _.$mgSpace),
+                targetHeight;
+
+            $itemTarget.css('position','fixed').show();
+            targetHeight = $itemTarget.height();
+
+            if (_.options.useArrow) {
+                $('.mg-arrow').animate({top:0});
+            }
+
+            $('.mg-space').animate({
+                height: targetHeight + _.options.targetPadding
+            }, 400, function () {
+                if (_.options.useArrow) {
+                    $('.mg-arrow').css({
+                        left: itemPosition.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - 10,
+                    });
+                    $('.mg-arrow').animate({top:-9}, 200);
+                }
+
+            });            
         },
 
-        flowColumns: function (cols) {
+        setColumns: function (cols) {
             var _ = this,
-                col = 1;
+                cols = 1;
 
             $.each(_.options.breakpointColumns, function( idx, val ) {
                 if (_.getViewportWidth() > val.breakpoint) {
-                    col = val.column
+                    cols = val.column
                 }
             });
 
-            return col;
+            return cols;
+        },
+
+        setRows: function (rows) {
+            var _ = this,
+                row = 0,
+                colCount = 1,
+                cols = _.setColumns(rows),
+                parent = null,
+                newParent = _.$mgSpace.index();                
+
+            $(rows).each(function(idx) {
+                
+                if(parent == null) {
+                    parent = newParent;
+                }
+
+                if(parent != newParent){
+                    parent = _.$mgSpace.index();
+                }
+
+                $(this).attr('data-id', idx + 1);
+                $(this).attr('data-section', parent);
+
+                if (!$(this).parent().hasClass(_.stripDot(_.options.targetWrapper))) {
+                    $(this).addClass(_.stripDot(_.options.row));
+                    $(this).attr('data-row', row);
+                } else {
+                    $(this).addClass(_.stripDot(_.options.target));
+                }
+
+                if(colCount==cols){
+                    row++,
+                    colCount=0;
+                }
+                colCount++;
+                
+            });            
         },
 
         getViewportWidth: function () {
@@ -156,6 +373,48 @@
             $('html, body').animate({
                 scrollTop: $(element).offset().top
             }, 400);
+        },
+
+        stripDot: function (string) {
+            return string.replace('.', '');
+        },
+
+        tempHash: function () {
+            // CHECK FOR HASH
+            if (window.location.hash && mgs.useHash) {
+                setTimeout(function () {
+                    var sectionID =  window.location.hash.replace(mgs.hashTitle, "").split('-'),
+                        rowItem = '[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
+                    //console.log('LOADING HASH');
+                    if (!$(rowItem).hasClass(mgs.row+'-open')) {
+                        activatingHash = true;
+                        mg.openRow(rowItem);
+                    }
+                }, 400);
+            }
+
+            // Open Target
+            if (mgs.useHash && !activatingHash) {
+                var section = $(rowItem).attr('data-section'),
+                    id = $(rowItem).attr('data-id');
+                if (false) {
+
+                } else {
+                    mg.activateHash(mgs.hashTitle+section+'-'+id);
+                }
+            }            
+
+            $(window).off('hashchange').on('hashchange', function(e) {
+                setTimeout(function () {
+                    var sectionID =  window.location.hash.replace(mgs.hashTitle, "").split('-'),
+                        rowItem = '[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
+                    //console.log('HASH CHANGE');
+                    if (!$(rowItem).hasClass(mgs.row+'-open')) {
+                        activatingHash = true;
+                        mg.rowController(rowItem);
+                    }
+                }, 400);                
+            });
         }
     });
 
