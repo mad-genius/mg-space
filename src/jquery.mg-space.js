@@ -193,24 +193,29 @@
         openTarget: function (element) {
             var _ = this,
                 itemId = $(element).attr('data-id'),
-                itemOffset = $('.mg-space').offset(),
                 $itemTarget = $(_.options.target+'[data-id="' + itemId + '"]', _.$mgSpace);
 
             //console.log('Open Target');
 
             $(element).addClass(_.stripDot(_.options.row)+'-open');
 
+            // Offset Bug in Chrome Hack ON
+            $('body').css('overflowY','scroll');
+
             $itemTarget
                 .removeAttr('style')
                 .addClass(_.stripDot(_.options.target)+'-open')
                 .css({
                     position: 'absolute',
-                    top: itemOffset.top,
+                    top: $('.mg-space').offset().top,
                     zIndex: 2,
                     paddingTop: _.options.targetPadding/2,
                     paddingBottom: _.options.targetPadding/2
                 })
                 .slideDown(300);
+
+            // Offset Bug in Chrome Hack OFF
+            $('body').removeAttr('style');
 
             $itemTarget.prepend('<a href="#" class="'+_.stripDot(_.options.close)+'"></a>');          
         },
@@ -264,7 +269,6 @@
             console.log('Close Space');            
 
             $('.mg-space').slideUp(speed, function () {
-                console.log('NOW HERE');
                 $('.mg-space').removeClass('mg-space-open');
                 if (_.options.useIndicator) {
                     $('.mg-indicator').css({top:0});
@@ -273,12 +277,11 @@
         },
 
         resizeSpace: function (element) {
-            console.log('HERE');
             var _ = this,
                 itemId = $(element).attr('data-id'),
                 itemSection = $(element).attr('data-section'),
                 itemPosition = $(element).position(),
-                $itemTarget = $(_.options.target+'[data-section="' + itemSection + '"][data-id="' + itemId + '"]', _.$mgSpace),
+                $itemTarget = $(_.options.target+'[data-section="' + itemSection + '"][data-id="' + itemId + '"]'),
                 itemTargetOpen = $itemTarget.hasClass(_.stripDot(_.options.target+'-open')),
                 targetHeight;
 
