@@ -25,6 +25,8 @@
     // Create the defaults once
     var mgSpace = "mgSpace",
         defaults = {
+
+            // Breakpoints at which the accordian changes # of columns
             breakpointColumns: [
                 {
                     breakpoint: 0,
@@ -43,17 +45,24 @@
                     column: 4
                 }
             ],
+
+            // Default selectors
             rowWrapper: ".mg-rows",
             row: ".mg-row",
-            rowMargin: 25, // Set to zero for gridless
             targetWrapper: ".mg-targets",
             target: ".mg-target",
-            targetPadding: 120,
             trigger: ".mg-trigger",
             close: ".mg-close",
+
+            // Default target padding top/bottom and row bottom margin
+            rowMargin: 25, // Set to zero for gridless
+            targetPadding: 120, // Padding top/bottom inside target gets divided by 2
+
             useHash: false, // Set to true for history
-            hashTitle: "#item", // Must include `#` hash symbol           
-            useArrow: true
+            hashTitle: "#item", // Must include `#` hash symbol
+
+            // MISC          
+            useIndicator: true
         };
 
     // The actual plugin constructor
@@ -63,7 +72,7 @@
         _.$mgSpace = $(element);
         _.options = $.extend( {}, defaults, options );
         _._defaults = defaults;
-        _._name =  ;
+        _._name =  mgSpace;
         _.init();
     }
 
@@ -85,7 +94,7 @@
 
             // Add Row Margin if Greater Than Zero (0)
             if (_.options.rowMargin > 0) {
-                _.$mgSpace.prepend('<style scoped>.mg-row{margin-bottom:'+_.options.rowMargin+'px}</style>');
+                _.$mgSpace.prepend('<style scoped>'+_.options.row+'{margin-bottom:'+_.options.rowMargin+'px}</style>');
             }
 
             _.$mgSpace.on('click.trigger', _.options.trigger, function (event) {
@@ -117,48 +126,39 @@
 
 
                 if($(_.options.target+'-open').length){
-                    var targetItem = $(_.options.target+'-open').attr('data-id');
-                    $(_.options.target+'-open').css('top',$(_.options.row+'-open[data-id="' + targetItem + '"]').offset().top+$(_.options.row+'-open[data-id="' + targetItem + '"]').height() + _.options.rowMargin );
-                    $('.mg-space').css('height',$(_.options.target+'-open').height()+_.options.targetPadding);
-                    if (_.options.useArrow) {
-                        $('.mg-arrow').css({
-                            left: $(_.options.row+'-open[data-id="' + targetItem + '"]').position().left + parseInt($(_.options.row+'-open[data-id="' + targetItem + '"]').css('padding-left')) + $(_.options.row+'-open[data-id="' + targetItem + '"]').width()/2 - 10,
-                        });                        
-                    }
+                    _.resizeSpace(_.options.row+'-open');
                 }                
             });            
         },
 
         rowController: function (element, event) {
             var _ = this,
-                rowItem = $(element).parent(),
-                itemSection = $(rowItem).attr('data-section'),
-                itemRow = $(rowItem).attr('data-row'),
-                itemId = $(rowItem).attr('data-id');
+                $rowItem = $(element).parent(),
+                itemSection = $rowItem.attr('data-section'),
+                itemRow = $rowItem.attr('data-row'),
+                itemId = $rowItem.attr('data-id');
 
-            if (event.data && event.data.close) {
-                _.closeRow();
+            if ((event.data && event.data.close) || $rowItem.hasClass(_.stripDot(_.options.row)+'-open')) {
+                _.closeRow(300);
             } else {
-                if ($(rowItem).hasClass(_.stripDot(_.options.row)+'-open')) {
-                    _.closeRow();
-                } else if ($(_.options.row+'-open[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').length) {
+                if ($(_.options.row+'-open[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').length) {
                     // Same Row
                     console.log('Same Row');
 
-                    _.closeTarget();
-                    _.resizeSpace(rowItem);
-                    _.openTarget(rowItem);
-                    _.scrollToTop(rowItem);                    
+                    _.closeTarget(200);
+                    _.resizeSpace($rowItem);
+                    _.openTarget($rowItem);
+                    _.scrollToTop($rowItem);                    
                 } else if ($('.mg-space').hasClass('mg-space-open')) {
                     // New Row
                     console.log('New Row');
 
-                    _.closeTarget();
-                    $('.mg-space').slideToggle(400, function () {
-                        _.openRow(rowItem);
+                    _.closeTarget(200);
+                    $('.mg-space').slideToggle(300, function () {
+                        _.openRow($rowItem);
                     });
                 } else {
-                    _.openRow(rowItem);
+                    _.openRow($rowItem);
                 }
             }
         },
@@ -169,7 +169,9 @@
             // Before Open Row Event Handler
             _.$mgSpace.trigger('beforeOpenRow', [_, element]);
 
-            console.log('Open Row');
+            //console.log('Open Row');
+
+            $(_.options.row+'-open').removeClass(_.stripDot(_.options.row)+'-open');
 
             _.openSpace(element);
             _.openTarget(element);
@@ -179,50 +181,49 @@
             _.$mgSpace.trigger('afterOpenRow', [_, element]);
         },
 
-        closeRow: function () {
+        closeRow: function (speed) {
             var _ = this;
 
-            console.log('Close Row');
+            //console.log('Close Row');
 
-            _.closeTarget();
-            _.closeSpace();
+            _.closeTarget(speed);
+            _.closeSpace(speed);
         },        
 
         openTarget: function (element) {
-            console.log('Open Target');
-
             var _ = this,
                 itemId = $(element).attr('data-id'),
-                itemOffset = $(element).offset(),
-                itemHeight = $(element).height(),
+                itemOffset = $('.mg-space').offset(),
                 $itemTarget = $(_.options.target+'[data-id="' + itemId + '"]', _.$mgSpace);
 
-            $(element).addClass(_.stripDot(_.options.row)+'-open');
+            //console.log('Open Target');
 
-            $itemTarget.prepend('<a href="#" class="mg-close"></a>');
+            $(element).addClass(_.stripDot(_.options.row)+'-open');
 
             $itemTarget
                 .removeAttr('style')
                 .addClass(_.stripDot(_.options.target)+'-open')
                 .css({
                     position: 'absolute',
-                    top: itemOffset.top + itemHeight + _.options.rowMargin,
+                    top: itemOffset.top,
                     zIndex: 2,
                     paddingTop: _.options.targetPadding/2,
                     paddingBottom: _.options.targetPadding/2
                 })
-                .slideToggle();            
+                .slideDown(300);
+
+            $itemTarget.prepend('<a href="#" class="'+_.stripDot(_.options.close)+'"></a>');          
         },
 
-        closeTarget: function () {
+        closeTarget: function (speed) {
             var _ = this;
 
-            console.log('Close Target');            
+            //console.log('Close Target');            
             
             $(_.options.row+'-open').removeClass(_.stripDot(_.options.row)+'-open');
             $(_.options.target+'-open').css('z-index',1);
-            $('.mg-close').remove();
-            $(_.options.target+'-open').slideToggle(400, function () {
+            $(_.options.close).remove();
+            $(_.options.target+'-open').slideUp(speed, function () {
                 $(this).removeClass(_.stripDot(_.options.target)+'-open').removeAttr('style');
             });            
         },            
@@ -234,71 +235,88 @@
                 itemId = $(element).attr('data-id'),
                 itemPosition = $(element).position(),
                 $itemTarget = $(_.options.target+'[data-section="' + itemSection + '"][data-id="' + itemId + '"]', _.$mgSpace),
-                targetHeight;
+                targetHeight = 0;
 
-            console.log('Open Space');
-
-            $itemTarget.css('position','fixed').show();
-            targetHeight = $itemTarget.height();            
+            targetHeight = $itemTarget.css('position','fixed').show().height();
 
             if (!$('.mg-space[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').length) {
                 $('.mg-space').remove();
-                $(_.options.rowWrapper).find('[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').last().after('<div class="mg-space" data-section="' + itemSection + '" data-row="' + itemRow + '"><div class="mg-arrow"></div></div>');
+                $(_.options.rowWrapper).find('[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').last().after('<div class="mg-space" data-section="' + itemSection + '" data-row="' + itemRow + '"><div class="mg-indicator"></div></div>');
             }
 
             $('.mg-space[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').css({
                 height: targetHeight + _.options.targetPadding,
                 marginBottom: _.options.rowMargin
-            }).slideToggle(400, function() {
+            }).slideDown(300, function() {
                 $('.mg-space').addClass('mg-space-open');
-                if (_.options.useArrow) {
-                    $('.mg-arrow').css({
+                if (_.options.useIndicator) {
+                    $('.mg-indicator').css({
                         left: itemPosition.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - 10,
                     });
-                    $('.mg-arrow').animate({top:-9}, 200);
+                    $('.mg-indicator').animate({top:-9}, 200);
                 }
             });                        
         },
 
-        closeSpace: function () {
+        closeSpace: function (speed) {
             var _ = this;
 
             console.log('Close Space');            
 
-            $('.mg-space').slideToggle(400, function () {
+            $('.mg-space').slideUp(speed, function () {
+                console.log('NOW HERE');
                 $('.mg-space').removeClass('mg-space-open');
-                if (_.options.useArrow) {
-                    $('.mg-arrow').animate({top:0}, 200);
+                if (_.options.useIndicator) {
+                    $('.mg-indicator').css({top:0});
                 }
             });            
         },
 
         resizeSpace: function (element) {
+            console.log('HERE');
             var _ = this,
                 itemId = $(element).attr('data-id'),
                 itemSection = $(element).attr('data-section'),
                 itemPosition = $(element).position(),
                 $itemTarget = $(_.options.target+'[data-section="' + itemSection + '"][data-id="' + itemId + '"]', _.$mgSpace),
+                itemTargetOpen = $itemTarget.hasClass(_.stripDot(_.options.target+'-open')),
                 targetHeight;
 
-            $itemTarget.css('position','fixed').show();
-            targetHeight = $itemTarget.height();
-
-            if (_.options.useArrow) {
-                $('.mg-arrow').animate({top:0});
+            if (!itemTargetOpen) {
+                $itemTarget.css('position','fixed').show();
+            } else {
+                $(_.options.target+'-open').css('top',$(_.options.row+'-open').offset().top+$(_.options.row+'-open').height() + _.options.rowMargin );                
             }
 
-            $('.mg-space').animate({
-                height: targetHeight + _.options.targetPadding
-            }, 400, function () {
-                if (_.options.useArrow) {
-                    $('.mg-arrow').css({
+            targetHeight = $itemTarget.height();
+
+            if (_.options.useIndicator && !itemTargetOpen) {
+                $('.mg-indicator').css({top:1});
+            }
+
+            if (!itemTargetOpen) {
+                $('.mg-space').animate({
+                    height: targetHeight + _.options.targetPadding
+                }, 200, function () {
+                    if (_.options.useIndicator) {
+                        $('.mg-indicator').css({
+                            left: itemPosition.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - 10,
+                        });
+                        $('.mg-indicator').animate({top:-9}, 200);
+                    }
+                });
+            } else {
+                $('.mg-space').css(
+                    'height', targetHeight + _.options.targetPadding
+                );
+
+                if (_.options.useIndicator) {
+                    $('.mg-indicator').css({
                         left: itemPosition.left + parseInt($(element).css('padding-left')) + $(element).width()/2 - 10,
                     });
-                    $('.mg-arrow').animate({top:-9}, 200);
-                }
-
-            });            
+                    $('.mg-indicator').animate({top:-9}, 200);
+                }                                            
+            }          
         },
 
         setColumns: function (cols) {
@@ -322,7 +340,7 @@
                 parent = null,
                 newParent = _.$mgSpace.index();                
 
-            $(rows).each(function(idx) {
+            rows.each(function(idx) {
                 
                 if(parent == null) {
                     parent = newParent;

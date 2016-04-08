@@ -19,7 +19,7 @@
     position:absolute;
     top:0;left:0;right:0;
 }
-.mg-arrow {
+.mg-indicator {
     border-bottom: 10px solid #222;
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
