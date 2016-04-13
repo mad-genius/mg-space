@@ -44,7 +44,7 @@ $(function() {
     }
 
     if($('.mg-history').length){
-        $('.mg-history').mgSpace({useHash: true});
+        $('.mg-space-init').mgSpace({useHash: true,useOnpageHash: true});
     }
 
     if($('.mg-space-multiple').length){

@@ -29,6 +29,7 @@
     width: 0;
 }
 .mg-close {
+    display: none;
     background: url(data:image/gif;base64,R0lGODlhFAAUAJEAAE1NTf///////wAAACH5BAEHAAIALAAAAAAUABQAAAIzBISpK+YMm5Enpodw1HlCfnkKOIqU1VXk55goVb2hi7Y0q95lfG70uurNaqLgTviyyUoFADs=) no-repeat center center;
     cursor: pointer;
     height: 30px;

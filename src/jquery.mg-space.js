@@ -59,11 +59,14 @@
             targetPadding: 120, // Padding top/bottom inside target gets divided by 2
 
             useHash: false, // Set to true for history
-            hashTitle: "#item", // Must include `#` hash symbol
+            useOnpageHash: false, // Set true for onpage history
+            hashTitle: "#/item-", // Must include `#` hash symbol
 
             // MISC          
             useIndicator: true
-        };
+        },
+        shouldClick = true,
+        activatingHash = false;
 
     // The actual plugin constructor
     function MGSpace ( element, options ) {
@@ -80,7 +83,7 @@
     $.extend(MGSpace.prototype, {
         init: function () {
             var _ = this,
-                cols = _.setColumns($(_.options.row, _.$ ));
+                cols = _.setColumns();
 
             // Set Columns
             $(_.options.rowWrapper, _.$mgSpace).attr('data-cols', cols);
@@ -97,22 +100,32 @@
                 _.$mgSpace.prepend('<style scoped>'+_.options.row+'{margin-bottom:'+_.options.rowMargin+'px}</style>');
             }
 
-            _.$mgSpace.on('click.trigger', _.options.trigger, function (event) {
-                event.preventDefault();
-                event.stopPropagation();
 
-                _.rowController(this, event);
+            // NEED TO BUILD BETTER CLICK HANDLER
+            _.$mgSpace.on('click', _.options.trigger, function (event) {
+                event.preventDefault();
             });
 
-            _.$mgSpace.on('click.close', _.options.close, {close:true}, function (event) {
-                event.preventDefault();
-                event.stopPropagation();
+            // CLICK HANDLING SHOULD GO THROUGH ROW CONTROLLER
+            _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
+            _.$mgSpace.on('click.close', _.options.close, {close:true, mgSpace:_}, _.clickHandler);
 
-                _.rowController(this, event);
-            });
+            // LOAD HASH IF EXISTS
+            if (window.location.hash && _.options.useHash) {
+                setTimeout(function () {
+                    var sectionID =  window.location.hash.replace(_.options.hashTitle, "").split('-'),
+                        rowItem = _.options.row+'[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
+
+                    if (sectionID[0] == _.$mgSpace.index()) {
+                         activatingHash = true;
+                        _.openRow(rowItem);
+                    }
+
+                }, 400);
+            }
 
             $(window).on('resize', function () {
-                cols = _.setColumns($(_.options.row, _.$mgSpace));
+                cols = _.setColumns();
                 _.setRows($(_.options.row, _.$mgSpace));
 
                 if (cols != $(_.options.rowWrapper).attr('data-cols')) {
@@ -128,6 +141,26 @@
                 if($(_.options.target+'-open').length){
                     _.resizeSpace(_.options.row+'-open');
                 }                
+            });
+
+            $(window).on('hashchange', function () {
+                if (window.location.hash && _.options.useHash && _.options.useOnpageHash) {
+                    var sectionID =  window.location.hash.replace(_.options.hashTitle, "").split('-'),
+                        rowItem = _.options.row+'[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
+
+                    _.scrollToTop(rowItem);
+                    activatingHash = true;
+
+                    if (sectionID[0] == _.$mgSpace.index()) {
+                        _.closeRow(300);
+
+                        setTimeout(function () {
+                            _.openRow(rowItem);
+                        }, 400);
+                    }
+                } else {
+                    _.closeRow(300);
+                }               
             });            
         },
 
@@ -135,15 +168,16 @@
             var _ = this,
                 $rowItem = $(element).parent(),
                 itemSection = $rowItem.attr('data-section'),
-                itemRow = $rowItem.attr('data-row'),
-                itemId = $rowItem.attr('data-id');
+                itemRow = $rowItem.attr('data-row');
+
+            _.$mgSpace.off('click.trigger', _.options.trigger, _.clickHandler);
 
             if ((event.data && event.data.close) || $rowItem.hasClass(_.stripDot(_.options.row)+'-open')) {
                 _.closeRow(300);
             } else {
                 if ($(_.options.row+'-open[data-section="' + itemSection + '"][data-row="' + itemRow + '"]').length) {
                     // Same Row
-                    console.log('Same Row');
+                    //console.log('Same Row');
 
                     _.closeTarget(200);
                     _.resizeSpace($rowItem);
@@ -151,7 +185,7 @@
                     _.scrollToTop($rowItem);                    
                 } else if ($('.mg-space').hasClass('mg-space-open')) {
                     // New Row
-                    console.log('New Row');
+                    //console.log('New Row');
 
                     _.closeTarget(200);
                     $('.mg-space').slideToggle(300, function () {
@@ -192,8 +226,9 @@
 
         openTarget: function (element) {
             var _ = this,
+                itemSection = $(element).attr('data-section'),
                 itemId = $(element).attr('data-id'),
-                $itemTarget = $(_.options.target+'[data-id="' + itemId + '"]', _.$mgSpace);
+                $itemTarget = $(_.options.target+'[data-section="' + itemSection + '"][data-id="' + itemId + '"]', _.$mgSpace);
 
             //console.log('Open Target');
 
@@ -201,6 +236,8 @@
 
             // Offset Bug in Chrome Hack ON
             $('body').css('overflowY','scroll');
+
+            $itemTarget.prepend('<a href="#" class="'+_.stripDot(_.options.close)+'"></a>');
 
             $itemTarget
                 .removeAttr('style')
@@ -212,12 +249,19 @@
                     paddingTop: _.options.targetPadding/2,
                     paddingBottom: _.options.targetPadding/2
                 })
-                .slideDown(300);
+                .slideDown(300, function(){
+                    _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
+                    $(_.options.close).fadeIn(200);
+                });
 
             // Offset Bug in Chrome Hack OFF
             $('body').removeAttr('style');
 
-            $itemTarget.prepend('<a href="#" class="'+_.stripDot(_.options.close)+'"></a>');          
+            if (_.options.useHash && !activatingHash) {
+                _.activateHash(_.options.hashTitle+itemSection+'-'+itemId);
+            }
+
+            activatingHash = false;
         },
 
         closeTarget: function (speed) {
@@ -230,10 +274,11 @@
             $(_.options.close).remove();
             $(_.options.target+'-open').slideUp(speed, function () {
                 $(this).removeClass(_.stripDot(_.options.target)+'-open').removeAttr('style');
+                _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
             });            
         },            
 
-        openSpace: function (element) {
+        openSpace: function (element) {           
             var _ = this,
                 itemSection = $(element).attr('data-section'),
                 itemRow = $(element).attr('data-row'),
@@ -241,6 +286,8 @@
                 itemPosition = $(element).position(),
                 $itemTarget = $(_.options.target+'[data-section="' + itemSection + '"][data-id="' + itemId + '"]', _.$mgSpace),
                 targetHeight = 0;
+
+            //console.log('Open Space');
 
             targetHeight = $itemTarget.css('position','fixed').show().height();
 
@@ -266,12 +313,12 @@
         closeSpace: function (speed) {
             var _ = this;
 
-            console.log('Close Space');            
+            //console.log('Close Space');            
 
             $('.mg-space').slideUp(speed, function () {
                 $('.mg-space').removeClass('mg-space-open');
                 if (_.options.useIndicator) {
-                    $('.mg-indicator').css({top:0});
+                    $('.mg-indicator').css({top:1});
                 }
             });            
         },
@@ -322,13 +369,13 @@
             }          
         },
 
-        setColumns: function (cols) {
+        setColumns: function () {
             var _ = this,
                 cols = 1;
 
             $.each(_.options.breakpointColumns, function( idx, val ) {
                 if (_.getViewportWidth() > val.breakpoint) {
-                    cols = val.column
+                    cols = val.column;
                 }
             });
 
@@ -339,13 +386,13 @@
             var _ = this,
                 row = 0,
                 colCount = 1,
-                cols = _.setColumns(rows),
+                cols = _.setColumns(),
                 parent = null,
                 newParent = _.$mgSpace.index();                
 
             rows.each(function(idx) {
                 
-                if(parent == null) {
+                if(parent === null) {
                     parent = newParent;
                 }
 
@@ -364,7 +411,7 @@
                 }
 
                 if(colCount==cols){
-                    row++,
+                    row++;
                     colCount=0;
                 }
                 colCount++;
@@ -396,48 +443,24 @@
             }, 400);
         },
 
-        stripDot: function (string) {
-            return string.replace('.', '');
-        },
+        clickHandler: function(event) {
+            var _ = event.data.mgSpace;
 
-        tempHash: function () {
-            // CHECK FOR HASH
-            if (window.location.hash && mgs.useHash) {
-                setTimeout(function () {
-                    var sectionID =  window.location.hash.replace(mgs.hashTitle, "").split('-'),
-                        rowItem = '[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
-                    //console.log('LOADING HASH');
-                    if (!$(rowItem).hasClass(mgs.row+'-open')) {
-                        activatingHash = true;
-                        mg.openRow(rowItem);
-                    }
-                }, 400);
+            if (shouldClick) {
+                event.stopImmediatePropagation();
+                event.stopPropagation();
+                event.preventDefault();
+
+                _.rowController(this, event);
             }
 
-            // Open Target
-            if (mgs.useHash && !activatingHash) {
-                var section = $(rowItem).attr('data-section'),
-                    id = $(rowItem).attr('data-id');
-                if (false) {
+        },        
 
-                } else {
-                    mg.activateHash(mgs.hashTitle+section+'-'+id);
-                }
-            }            
-
-            $(window).off('hashchange').on('hashchange', function(e) {
-                setTimeout(function () {
-                    var sectionID =  window.location.hash.replace(mgs.hashTitle, "").split('-'),
-                        rowItem = '[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
-                    //console.log('HASH CHANGE');
-                    if (!$(rowItem).hasClass(mgs.row+'-open')) {
-                        activatingHash = true;
-                        mg.rowController(rowItem);
-                    }
-                }, 400);                
-            });
+        stripDot: function (string) {
+            return string.replace('.', '');
         }
-    });
+
+    }); //END $.extend
 
     // A really lightweight plugin wrapper around the constructor,
     // preventing against multiple instantiations

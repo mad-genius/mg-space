@@ -9,15 +9,15 @@ Basic markup.
 ```html
     <div class="mg-space-init">
         <div class="mg-rows">
-            <div class="mg-row"></div>
-            <div class="mg-row"></div>
-            <div class="mg-row"></div>
+            <div></div>
+            <div></div>
+            <div></div>
             ...
         </div>
         <div class="mg-targets">
-            <div class="mg-target"></div>
-            <div class="mg-target"></div>
-            <div class="mg-target"></div>
+            <div></div>
+            <div></div>
+            <div></div>
             ...
         </div>        
     </div>
