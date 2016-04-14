@@ -110,6 +110,27 @@
             _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
             _.$mgSpace.on('click.close', _.options.close, {close:true, mgSpace:_}, _.clickHandler);
 
+            $(window).on('resize', function () {
+                cols = _.setColumns();
+                _.setRows($(_.options.row, _.$mgSpace));
+
+                if (cols != $(_.options.rowWrapper).attr('data-cols')) {
+                    $(_.options.rowWrapper).attr('data-cols',cols);
+
+                    // Close
+                    $(_.options.target+'-open').removeClass(_.stripDot(_.options.target)+'-open').removeAttr('style');
+                    $(_.options.row+'-open').removeClass(_.stripDot(_.options.row)+'-open');
+                    $('.mg-space').remove();
+
+                    _.$mgSpace.trigger('afterCloseTarget', [_]);
+                }
+
+
+                if($(_.options.target+'-open').length){
+                    _.resizeSpace(_.options.row+'-open');
+                }                
+            });
+
             // LOAD HASH IF EXISTS
             if (window.location.hash && _.options.useHash) {
                 setTimeout(function () {
@@ -124,27 +145,8 @@
                 }, 400);
             }
 
-            $(window).on('resize', function () {
-                cols = _.setColumns();
-                _.setRows($(_.options.row, _.$mgSpace));
-
-                if (cols != $(_.options.rowWrapper).attr('data-cols')) {
-                    $(_.options.rowWrapper).attr('data-cols',cols);
-
-                    // Close
-                    $(_.options.target+'-open').removeClass(_.stripDot(_.options.target)+'-open').removeAttr('style');
-                    $(_.options.row+'-open').removeClass(_.stripDot(_.options.row)+'-open');
-                    $('.mg-space').remove();
-                }
-
-
-                if($(_.options.target+'-open').length){
-                    _.resizeSpace(_.options.row+'-open');
-                }                
-            });
-
             $(window).on('hashchange', function () {
-                if (window.location.hash && _.options.useHash && _.options.useOnpageHash) {
+                if (window.location.hash && _.options.useOnpageHash) {
                     var sectionID =  window.location.hash.replace(_.options.hashTitle, "").split('-'),
                         rowItem = _.options.row+'[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
 
@@ -166,7 +168,7 @@
 
         rowController: function (element, event) {
             var _ = this,
-                $rowItem = $(element).parent(),
+                $rowItem = $(element).closest(_.options.row),
                 itemSection = $rowItem.attr('data-section'),
                 itemRow = $rowItem.attr('data-row');
 
@@ -232,6 +234,9 @@
 
             //console.log('Open Target');
 
+            // Before Open Target Event Handler
+            _.$mgSpace.trigger('beforeOpenTarget', [_]);
+
             $(element).addClass(_.stripDot(_.options.row)+'-open');
 
             // Offset Bug in Chrome Hack ON
@@ -252,6 +257,9 @@
                 .slideDown(300, function(){
                     _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
                     $(_.options.close).fadeIn(200);
+
+                    // After Open Target Event Handler
+                    _.$mgSpace.trigger('afterOpenTarget', [_, $itemTarget]);                    
                 });
 
             // Offset Bug in Chrome Hack OFF
@@ -267,15 +275,22 @@
         closeTarget: function (speed) {
             var _ = this;
 
-            //console.log('Close Target');            
-            
+            //console.log('Close Target');
+
+            // Before Close Target Event Handler
+            _.$mgSpace.trigger('beforeCloseTarget', [_]);
+
             $(_.options.row+'-open').removeClass(_.stripDot(_.options.row)+'-open');
             $(_.options.target+'-open').css('z-index',1);
             $(_.options.close).remove();
             $(_.options.target+'-open').slideUp(speed, function () {
                 $(this).removeClass(_.stripDot(_.options.target)+'-open').removeAttr('style');
                 _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
-            });            
+
+
+                // After Close Target Event Handler
+                _.$mgSpace.trigger('afterCloseTarget', [_]);                
+            });              
         },            
 
         openSpace: function (element) {           
@@ -404,8 +419,8 @@
                 $(this).attr('data-section', parent);
 
                 if (!$(this).parent().hasClass(_.stripDot(_.options.targetWrapper))) {
-                    $(this).addClass(_.stripDot(_.options.row));
                     $(this).attr('data-row', row);
+                    $(this).addClass(_.stripDot(_.options.row));
                 } else {
                     $(this).addClass(_.stripDot(_.options.target));
                 }

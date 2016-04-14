@@ -1,5 +1,7 @@
 $(function() {
 
+    var slicked;
+
     if ($('.default').length) {
         $('.mg-space-init').mgSpace();
         
@@ -50,6 +52,28 @@ $(function() {
     if($('.mg-space-multiple').length){
         $('.mg-space-init4').mgSpace({useHash: true});
     }
+
+    if ($('.slick').length) {
+        $('.mg-space-init').mgSpace();
+
+        $('.mg-space-init').on('afterOpenTarget', function(event, mgSpace, itemTarget){
+            slicked = itemTarget['selector'];
+
+            //For responsive slick you must wrap in screen width tests and set them seperately
+            //you can not use slicks "responsive" option.
+            $(slicked +' .multiple-items').slick({
+              infinite: true,
+              slidesToShow: 4,
+              slidesToScroll: 4,           
+            });
+        });
+
+        $('.mg-space-init').on('afterCloseTarget', function(event, mgSpace){
+            if ($('.slick-initialized').length) {
+                $(slicked +' .multiple-items').slick("destroy", true);
+            }
+        });                
+    }    
 
     // Chrome Dev Tools Screen Sizing Clone
     function gvwh(){var i=window,t="inner";return"innerWidth"in window||(t="client",i=document.documentElement||document.body),i[t+"Width"]+"px"+' &times; '+i[t+"Height"]+"px"}$("body").append('<div id="size" style="position:fixed;bottom:0;right:0;background:#ddd;padding:0 6px;font-size:16px;font-family:sans-serif;z-index:9999"></div>'),$("#size").append(gvwh()),$(window).resize(function(){$("#size").html(gvwh())});   
