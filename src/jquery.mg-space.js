@@ -14,7 +14,7 @@
 * By Bryce Mullican (@BryceMullican)
 * Licensed under the MIT license.
 *
-* @link http://github.com/?
+* @link https://github.com/Mad-Genius/mg-space
 * @author Bryce Mullican
 * @version 1.0.0
 */
