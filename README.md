@@ -9,9 +9,15 @@ Basic markup.
 ```html
     <div class="mg-space-init">
         <div class="mg-rows">
-            <div></div>
-            <div></div>
-            <div></div>
+            <div>
+                <a href="#" title="trigger element" class="mg-trigger"></a>
+            </div>
+            <div>
+                <a href="#" title="trigger element" class="mg-trigger"></a>
+            </div>
+            <div>
+                <a href="#" title="trigger element" class="mg-trigger"></a>
+            </div>
             ...
         </div>
         <div class="mg-targets">
@@ -22,7 +28,7 @@ Basic markup.
         </div>        
     </div>
 ```
-In a basic scenario, you just need to import `mg-space.css`, `jquery`, `jquery.mg-space.js` and call the mgSpace() function on the wrapper containing `.mg-rows` and `.mg-targets`.
+In a basic scenario, you just need to import `mg-space.css`, `jquery`, `jquery.mg-space.js` and call the mgSpace() function on the wrapper containing `.mg-rows` and `.mg-targets`. The trigger `mg-trigger` does not have to be a link, but it does have to be inside a child of `.mg-rows` as shown.
 
 ```html
     <link rel="stylesheet" href="mg-space.css">
@@ -37,9 +43,10 @@ In a basic scenario, you just need to import `mg-space.css`, `jquery`, `jquery.m
 ```
 ## Demo
 
-You can view a few demo examples using mgSpace under the demo folder.
+You can view a few demo examples using mgSpace [here](http://mad-genius.github.io/mg-space/).
 
 ## Licence
 
 Copyright (c) 2011-2012 Bryce Mullican.
 Licensed under the MIT license.
+(https://github.com/Mad-Genius/mg-space/blob/master/MIT-LICENSE.txt)
