@@ -58,14 +58,17 @@ $(function() {
 
         $('.mg-space-init').on('afterOpenTarget', function(event, mgSpace, itemTarget){
             slicked = itemTarget['selector'];
+            
+            var cols = mgSpace.setColumns();
 
             //For responsive slick you must wrap in screen width tests and set them seperately
             //you can not use slicks "responsive" option.
             $(slicked +' .multiple-items').slick({
               infinite: true,
-              slidesToShow: 4,
-              slidesToScroll: 4,           
-            });
+              slidesToShow: cols,
+              slidesToScroll: 1,           
+            });                
+
         });
 
         $('.mg-space-init').on('afterCloseTarget', function(event, mgSpace){

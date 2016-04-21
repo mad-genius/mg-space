@@ -708,13 +708,13 @@ p { margin: 0 0 11px; }
 
 .slick .mg-target {
   box-sizing: initial;
-  height: 200px;
+  height: 141px;
   overflow: hidden;
 }
 
 .slick .multiple-items {
   overflow: hidden;
-  height: 166px;
+  height: 141px;
 }
 
 .slick .slick-prev {
@@ -728,7 +728,7 @@ p { margin: 0 0 11px; }
 }
 
 .slick .demo-item {
-    margin-bottom: 25px;
+    margin-bottom: 0;
     text-align: center;
 }
 

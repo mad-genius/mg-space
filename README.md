@@ -1,6 +1,6 @@
-# MG Space - A Responsive Google Images Inspired Accordian
+# MG Space - A Responsive Google Images Inspired Accordion
 
-MG Space is a responsive jQuery Google images inspired accordian plugin.
+MG Space is a responsive jQuery Google images inspired accordion plugin.
 
 ## Getting Started
 
