@@ -1,0 +1,156 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: "Open Sans";
+	font-size: 18px;
+	line-height: 1.5em;
+}
+
+.inner {
+	margin: 0 auto;
+	width: 90%;
+	max-width: 1400px;
+}
+
+.page-header {
+	position: relative;
+	padding: 100px 25px;
+	padding-top: 150px;
+	text-align: center;
+	background: #222 url("../images/space.png") top left no-repeat;
+	-webkit-background-size: cover;
+	background-size: cover;
+}
+
+.logo {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	max-width: 100px;
+}
+
+.logo img {
+	max-width: 100%;
+}
+
+.project-name {
+	margin: 100px 0;
+	font-size: 36px;
+	line-height: 1.5em;
+	font-weight: 300;
+	text-transform: uppercase;
+	letter-spacing: 18px;
+	color: #eee;
+}
+
+.project-tagline {
+	margin-bottom: 25px;
+	font-size: 22px;
+	font-weight: 300;
+	color: #eee;
+}
+
+.btn {
+	display: inline-block;
+	padding: 8px 16px;
+	font-size: 14px;
+	font-weight: bold;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: #444;
+	background: #eee;
+}
+
+.big-text {
+	margin: 2em 0;
+	font-size: 36px;
+	line-height: 1.3em;
+	font-weight: 300;
+}
+
+.feature {
+	position: relative;
+	float: left;
+	width: 33.33333%;
+	text-align: center;
+}
+
+.feature img {
+	margin-bottom: 1.3em;
+	max-width: 60%;
+}
+
+.feature-title {
+	font-size: 24px;
+	line-height: 1em;
+	font-weight: 300;
+}
+
+.click-me {
+	display: inline-block;
+	padding: 5px 12px;
+	font-size: 14px;
+	text-transform: uppercase;
+	background: #ccc;
+}
+
+.thumbnail {
+	float: left;
+	padding: 30px;
+	width: 20%;
+}
+
+.thumbnail img {
+	max-width: 100%;
+}
+
+.slider-inner {
+	margin: 0 auto;
+	width: 85%;
+}
+
+.slider-inner .slick-next {
+	right: -50px;
+}
+
+.slider-inner .slick-prev {
+	left: -50px;
+}
+
+.anything-inner {
+	margin: 0 auto;
+	width: 90%;
+	color: #ddd;
+}
+
+.anything img {
+	float: left;
+	margin-right: 30px;
+	width: 33.33333%;
+}
+
+.anything-content {
+	float: left;
+	position: absolute;
+	left: 39%;
+	right: 10%;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+	transform: translateY(-50%);
+}
+
+.anything .big-text {
+	margin-top: 0;
+	margin-bottom: 0.5em;
+}
+
+/* !-- Helpers ---------------------------------------------- */
+
+.group:after {
+	content: "";
+	display: table;
+	clear: both;
+}
