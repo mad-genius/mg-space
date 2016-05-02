@@ -8,6 +8,26 @@ body {
 	line-height: 1.5em;
 }
 
+a {
+	color: #000;
+}
+
+a:hover, a:focus {
+	color: #777;
+}
+
+ul {
+	margin-left: 0;
+	padding-left: 0;
+	list-style: none;
+}
+
+li {
+	margin-bottom: 20px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid #eee;
+}
+
 .inner {
 	margin: 0 auto;
 	width: 90%;
@@ -47,7 +67,7 @@ body {
 }
 
 .project-tagline {
-	margin-bottom: 25px;
+	margin-bottom: 35px;
 	font-size: 22px;
 	font-weight: 300;
 	color: #eee;
@@ -55,13 +75,27 @@ body {
 
 .btn {
 	display: inline-block;
+	margin: 0 5px;
 	padding: 8px 16px;
+	border-radius: 3px;
 	font-size: 14px;
 	font-weight: bold;
 	text-transform: uppercase;
 	text-decoration: none;
-	color: #444;
-	background: #eee;
+	color: #ccc;
+	background: #000;
+}
+
+.btn:hover, .btn:focus {
+	color: #000;
+	background: #ccc;
+}
+
+.btn-primary {
+	padding: 16px 32px;
+	font-size: 16px;
+	color: #000;
+	background: #C1D82F;
 }
 
 .big-text {
@@ -92,6 +126,7 @@ body {
 .click-me {
 	display: inline-block;
 	padding: 5px 12px;
+	border-radius: 3px;
 	font-size: 14px;
 	text-transform: uppercase;
 	background: #ccc;
@@ -145,6 +180,22 @@ body {
 .anything .big-text {
 	margin-top: 0;
 	margin-bottom: 0.5em;
+}
+
+.demos {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.demos li {
+	width: 31%;
+}
+
+.site-footer {
+	padding-top: 50px;
+	padding-bottom: 50px;
+	font-size: 14px;
+	color: #777;
 }
 
 /* !-- Helpers ---------------------------------------------- */
