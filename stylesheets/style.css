@@ -28,6 +28,17 @@ li {
 	border-bottom: 1px solid #eee;
 }
 
+p code {
+	display: inline-block;
+	padding: 4px 6px;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	font-size: 15px;
+	line-height: 1em;
+	background: #eee;
+	color: #777;
+}
+
 .inner {
 	margin: 0 auto;
 	width: 90%;
