@@ -77,6 +77,8 @@
         _._defaults = defaults;
         _._name =  mgSpace;
         _.init();
+
+        //console.log('MADE IT HERE');
     }
 
     // Avoid MGSpace.prototype conflicts
@@ -102,15 +104,15 @@
 
 
             // NEED TO BUILD BETTER CLICK HANDLER
-            _.$mgSpace.on('click', _.options.trigger, function (event) {
+            _.$mgSpace.on('click.mg', _.options.trigger, function (event) {
                 event.preventDefault();
             });
 
             // CLICK HANDLING SHOULD GO THROUGH ROW CONTROLLER
-            _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
-            _.$mgSpace.on('click.close', _.options.close, {close:true, mgSpace:_}, _.clickHandler);
+            _.$mgSpace.on('click.mg.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
+            _.$mgSpace.on('click.mg.close', _.options.close, {close:true, mgSpace:_}, _.clickHandler);
 
-            $(window).on('resize', function () {
+            $(window).on('resize.mg', function () {
                 cols = _.setColumns();
                 _.setRows($(_.options.row, _.$mgSpace));
 
@@ -145,7 +147,7 @@
                 }, 400);
             }
 
-            $(window).on('hashchange', function () {
+            $(window).on('hashchange.mg', function () {
                 if (window.location.hash && _.options.useOnpageHash) {
                     var sectionID =  window.location.hash.replace(_.options.hashTitle, "").split('-'),
                         rowItem = _.options.row+'[data-section="' + sectionID[0] + '"][data-id="' + sectionID[1] + '"]';
@@ -249,13 +251,13 @@
                 .addClass(_.stripDot(_.options.target)+'-open')
                 .css({
                     position: 'absolute',
-                    top: $('.mg-space').offset().top,
+                    top: $('.mg-space').position().top + $('.mg-rows').position().top,
                     zIndex: 2,
                     paddingTop: _.options.targetPadding/2,
                     paddingBottom: _.options.targetPadding/2
                 })
                 .slideDown(300, function(){
-                    _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
+                    _.$mgSpace.on('click.mg.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
                     $(_.options.close).fadeIn(200);
 
                     // After Open Target Event Handler
@@ -285,7 +287,7 @@
             $(_.options.close).remove();
             $(_.options.target+'-open').slideUp(speed, function () {
                 $(this).removeClass(_.stripDot(_.options.target)+'-open').removeAttr('style');
-                _.$mgSpace.on('click.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
+                _.$mgSpace.on('click.mg.trigger', _.options.trigger, {mgSpace:_}, _.clickHandler);
 
 
                 // After Close Target Event Handler
@@ -382,6 +384,32 @@
                     $('.mg-indicator').animate({top:-9}, 200);
                 }                                            
             }          
+        },
+
+        destroy: function () {
+            var _ = this;
+
+            // REMOVE PLUGIN
+            _.$mgSpace.removeData("plugin_" + mgSpace);
+
+            // TURN OFF EVENTS FIRST
+            _.$mgSpace.off('.mg');
+            $(window).off('.mg');
+
+            // REMOVE DATA ATTRS
+            $('.mg-rows').removeAttr('data-cols');
+            $('.mg-row, .mg-target').removeAttr('data-id');
+            $('.mg-row, .mg-target').removeAttr('data-section');
+            $('.mg-row, .mg-target').removeAttr('data-row');
+
+            // REMOVE INLINE STYLES
+            $('.mg-row, .mg-target').removeAttr('style');
+
+            // REMOVE ADDED CLASSES
+            $('.mg-row, .mg-target').removeClass('mg-row mg-target');
+
+            // REMOVE MG SPACE
+            $('.mg-space').remove();
         },
 
         setColumns: function () {

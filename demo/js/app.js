@@ -76,7 +76,36 @@ $(function() {
                 $(slicked +' .multiple-items').slick("destroy", true);
             }
         });                
-    }    
+    }
+
+    if ($('.destroy').length) {
+
+        if (getViewportWidth() > 768) {
+            $('.mg-space-init').mgSpace();
+            console.log('Init here');
+        }
+
+        $(window).on('resize', function(){
+            if (getViewportWidth() < 769) {
+                if ( $('.mg-space-init').data('plugin_mgSpace') ) {
+                    console.log('Destroy');
+                    $('.mg-space-init').data('plugin_mgSpace').destroy();
+                }
+            } else {
+                $('.mg-space-init').mgSpace();
+                console.log('Init');
+            }
+        });
+    }
+
+    function getViewportWidth() {
+        var e = window, a = 'inner';
+        if (!('innerWidth' in window )) {
+            a = 'client';
+            e = document.documentElement || document.body;
+        }
+        return e[ a+'Width' ];                  
+    }
 
     // Chrome Dev Tools Screen Sizing Clone
     function gvwh(){var i=window,t="inner";return"innerWidth"in window||(t="client",i=document.documentElement||document.body),i[t+"Width"]+"px"+' &times; '+i[t+"Height"]+"px"}$("body").append('<div id="size" style="position:fixed;bottom:0;right:0;background:#ddd;padding:0 6px;font-size:16px;font-family:sans-serif;z-index:9999"></div>'),$("#size").append(gvwh()),$(window).resize(function(){$("#size").html(gvwh())});   
