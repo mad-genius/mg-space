@@ -251,7 +251,7 @@
                 .addClass(_.stripDot(_.options.target)+'-open')
                 .css({
                     position: 'absolute',
-                    top: $('.mg-space').position().top + $('.mg-rows').position().top,
+                    top: $('.mg-space').position().top + jQuery('.mg-space').parent().position().top,
                     zIndex: 2,
                     paddingTop: _.options.targetPadding/2,
                     paddingBottom: _.options.targetPadding/2
