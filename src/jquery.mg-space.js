@@ -78,7 +78,7 @@
         _._name =  mgSpace;
         _.init();
 
-        console.log('MADE IT HERE');
+        //console.log('MADE IT HERE');
     }
 
     // Avoid MGSpace.prototype conflicts
@@ -251,7 +251,7 @@
                 .addClass(_.stripDot(_.options.target)+'-open')
                 .css({
                     position: 'absolute',
-                    top: $('.mg-space').offset().top,
+                    top: $('.mg-space').position().top + $('.mg-rows').position().top,
                     zIndex: 2,
                     paddingTop: _.options.targetPadding/2,
                     paddingBottom: _.options.targetPadding/2
