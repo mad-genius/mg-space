@@ -16,7 +16,7 @@
 *
 * @link https://github.com/Mad-Genius/mg-space
 * @author Bryce Mullican
-* @version 1.0.0
+* @version 1.1.3
 */
 ;(function ( $, window, document, undefined ) {
 
@@ -251,7 +251,7 @@
                 .addClass(_.stripDot(_.options.target)+'-open')
                 .css({
                     position: 'absolute',
-                    top: $('.mg-space').position().top + jQuery('.mg-space').parent().position().top,
+                    top: $('.mg-space').position().top + $('.mg-space').parent().offset().top,
                     zIndex: 2,
                     paddingTop: _.options.targetPadding/2,
                     paddingBottom: _.options.targetPadding/2
