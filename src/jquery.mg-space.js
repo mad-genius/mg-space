@@ -16,7 +16,7 @@
 *
 * @link https://github.com/Mad-Genius/mg-space
 * @author Bryce Mullican
-* @version 1.0.0
+* @version 1.1.3
 */
 ;(function ( $, window, document, undefined ) {
 
