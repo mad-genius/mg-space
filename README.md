@@ -33,7 +33,7 @@ In a basic scenario, you just need to import `mg-space.css`, `jquery`, `jquery.m
 ```html
     <link rel="stylesheet" href="mg-space.css">
     ...
-    <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script src="jquery.mg-space.js"></script>
     <script>
         $(function(){
